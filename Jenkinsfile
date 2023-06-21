@@ -64,10 +64,6 @@ pipeline {
                                 // Connect to the EC2 instance and execute commands remotely
                                 echo "Deploying to the test server"
                                 sh '''
-                                    mkdir -p /Users/tamireilon/.ssh
-                                    touch /Users/tamireilon/.ssh/known_hosts
-                                    ssh-keyscan -H 54.163.27.236 >> /Users/tamireilon/.ssh/known_hosts
-                                    ssh-keyscan $TEST_SERVER_IP >> /var/lib/jenkins/.ssh/known_hosts
                                     ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
                                         # Navigate to the desired directory
                                         cd /var/www/html/
