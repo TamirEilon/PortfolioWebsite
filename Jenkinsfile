@@ -39,7 +39,8 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
             steps {
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
-                clean()
+                deleteDir()
+
             }
         }
        
