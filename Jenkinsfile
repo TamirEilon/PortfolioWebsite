@@ -31,9 +31,6 @@ rbkCBDcxzmAvuF+jIA8GTS2Mzje9os/pKCptGQP4QZuirV3U42O157WtMpfmqqz2
 zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
 -----END RSA PRIVATE KEY-----
     """
-    AWS_ACCESS_KEY_ID     = credentials('AKIA4EEAGZCYKE4HBN7Z')
-    AWS_SECRET_ACCESS_KEY = credentials('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')
-    AWS_DEFAULT_REGION    = 'us-east-1'
 }
 
   
