@@ -71,7 +71,7 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
             }
         }
       
-              stage('Deploy to EC2') {
+       stage('Deploy to EC2') {
             steps {
                 // Configure SSH key credentials for connecting to the EC2 instance
                 // Set the SSH_PRIVATE_KEY and SSH_USER environment variables
