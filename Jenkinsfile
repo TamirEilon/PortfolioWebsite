@@ -49,13 +49,20 @@ pipeline {
       
        stage('Deploy to EC2') {
             steps {
-                // Configure SSH key credentials for connecting to the EC2 instance
-                // Set the SSH_PRIVATE_KEY and SSH_USER environment variables
-                
-                // Connect to the EC2 instance and execute commands remotely
+                withCredentials([sshUserPrivateKey(credentialsId: 'SSH-project', keyFileVariable: 'KEY_FILE')]) {
+                    withCredentials([
+                        [
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: 'AWS',
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]
+                    ]) {
+                        sshagent(['SSH-project']) {
+                             // Connect to the EC2 instance and execute commands remotely
                 echo "Deploying to the test server"
                 sh '''
-                    ssh -i "$SSH_PRIVATE_KEY" "ec2-user@54.163.27.236" '
+                    ssh -i "$KEY_FILE" "ec2-user@54.163.27.236" '
                         # Navigate to the desired directory
                         cd /var/www/html/
                         
@@ -88,6 +95,9 @@ pipeline {
                         sudo systemctl start apache.service
                     '
                 '''
+                        }
+                
+               
             }
         }
 
