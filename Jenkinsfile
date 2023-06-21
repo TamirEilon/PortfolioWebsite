@@ -46,7 +46,7 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
         stage('Clone') {
             steps {
                 // Clone your project repository from GitHub
-                echo "Cloning from GitHub
+                echo "Cloning from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
             }
         }
@@ -55,7 +55,7 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
             steps {
                 // Zip the files from the cloned repository
                 echo "Compressing files"
-                sh 'zip -r PortfolioWebsite.zip .'
+                sh 'zip -r archive.zip .'
             }
         }
       
@@ -66,7 +66,7 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
                 
                 // Upload the zip file to an S3 bucket using the AWS CLI
                 echo "Uploading to the cloud"
-                sh 'aws s3 cp archive.zip s3://my-final-project-bucket/'
+                sh 'aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
             }
         }
       
