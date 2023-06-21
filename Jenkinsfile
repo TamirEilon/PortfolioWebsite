@@ -5,7 +5,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script{
-                    env.TEST_SERVER_IP = "54.163.27.236"
+                    env.TEST_SERVER_IP = "54.210.175.244"
                 }
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
