@@ -1,9 +1,12 @@
 pipeline {
     agent any
-  
+
     stages {
         stage('Cleanup') {
             steps {
+                script{
+                    env.TEST_SERVER_IP = "54.163.27.236"
+                }
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
                 deleteDir()
@@ -61,7 +64,8 @@ pipeline {
                                 // Connect to the EC2 instance and execute commands remotely
                                 echo "Deploying to the test server"
                                 sh '''
-                                    ssh -i "$KEY_FILE" "ec2-user@54.163.27.236" '
+                                    ssh-keyscan $TEST_SERVER_IP >> /var/lib/jenkins/.ssh/known_hosts
+                                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
                                         # Navigate to the desired directory
                                         cd /var/www/html/
                                         
