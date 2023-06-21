@@ -2,6 +2,9 @@ pipeline {
     agent any
 
     environment {
+    AWS_ACCESS_KEY_ID = "AKIA4EEAGZCYKE4HBN7Z"
+    AWS_SECRET_ACCESS_KEY = "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"
+    AWS_DEFAULT_REGION = "us-east-1"    
     SSH_PRIVATE_KEY = """
         -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAn+5u9TU7tnMMQwTnRghCNcxQA0Gm5uxBu/DzEFuc1/LrG/Ig
