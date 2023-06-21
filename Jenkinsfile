@@ -41,7 +41,7 @@ pipeline {
                 
                 // Upload the zip file to an S3 bucket using the AWS CLI
                 echo "Uploading to the cloud"
-                sh 'aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
+                sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
                 }
                
             }
