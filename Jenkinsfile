@@ -59,7 +59,7 @@ zRq/1T5pcYT5JVHDCBAVkir34BQonFEmr18l/GYngwJNY71u3GUR
             steps {
                 // Zip the files from the cloned repository
                 echo "Compressing files"
-                sh 'zip -r PortfolioWebsite.zip .'
+                sh 'zip -r archive.zip .'
             }
         }
       
