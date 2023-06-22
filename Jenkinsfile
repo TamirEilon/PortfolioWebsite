@@ -49,20 +49,53 @@ pipeline {
             }
         }
       
-        stage('Connect to EC2 Test Server') {
+        stage('Deploy to EC2') {
             steps {
                 script {
-                    def sshUser = 'ec2-user'
-                    def sshKey = credentials('AWS_ACCESS_KEY_ID')
-                    def serverIp = env.TEST_SERVER_IP
-                    
-                    // Connect to the EC2 instance using SSH
-                    echo "Connecting to EC2 Test Server"
-                    sshagent(credentials: [sshKey]) {
-                        sh "ssh -o StrictHostKeyChecking=no -i ${sshKey} ${sshUser}@${serverIp} 'echo Connected'"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'SSH-project', keyFileVariable: 'KEY_FILE')]) {
+                        withCredentials([
+                            [
+                                $class: 'AmazonWebServicesCredentialsBinding',
+                                credentialsId: 'AWS',
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ]
+                        ]) {
+                            sshagent(['SSH-project']) {
+                                // Connect to the EC2 instance and execute commands remotely
+                                echo "Deploying to the test server"
+                                sh '''
+                                        ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
+                                        # Navigate to the desired directory
+                                        cd /var/www/html/
+                                        # Download the zip file from S3
+                                        aws s3 cp s3://my-final-project-bucket/PortfolioWebsite.zip .
+                                        # Unzip the file
+                                        unzip -o PortfolioWebsite.zip
+                                        # Clean up the zip file
+                                        rm PortfolioWebsite.zip
+                                        # Install & start Apache
+                                        sudo yum install httpd php -y
+                                        sudo service httpd start
+                                        # Change permissions & ownerships
+                                        sudo chown -R apache:apache /var/www/html/
+                                        sudo chmod -R 755 /var/www/html/
+                                        # Restart the Apache service
+                                        sudo service httpd restart
+                                        # Enable & start the service
+                                        sudo systemctl enable apache.service
+                                        sudo systemctl start apache.service
+                                        # Fix the limit-hit issue
+                                        sudo systemctl reset-failed apache.service
+                                        sudo systemctl start apache.service
+                                    '
+                                '''
+                            }
+                        }
                     }
                 }
             }
         }
+        // Additional stages and steps
     }
 }
