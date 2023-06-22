@@ -65,7 +65,7 @@ pipeline {
                                 // Connect to the EC2 instance and execute commands remotely
                                 echo "Deploying to the test server"
                                 sh '''
-                                        echo T123456 | sudo ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
+                                        echo T123456 | sudo -S -E sh -c "ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP"
                                         # Navigate to the desired directory
                                         cd /var/www/html/
                                         
