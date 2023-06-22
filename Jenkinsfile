@@ -5,7 +5,8 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script{
-                    env.TEST_SERVER_IP = "54.210.175.244"
+                    env.TEST_SERVER_IP = "52.23.224.120"
+                    env.PROD_SERVER_IP = ""
                 }
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
@@ -64,7 +65,7 @@ pipeline {
                                 // Connect to the EC2 instance and execute commands remotely
                                 echo "Deploying to the test server"
                                 sh '''
-                                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
+                                        ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
                                         # Navigate to the desired directory
                                         cd /var/www/html/
                                         
