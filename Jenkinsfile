@@ -1,14 +1,13 @@
 pipeline {
     agent any
-
-    enviorment{
-        TEST_SERVER_IP = "52.23.224.120"
-        PROD_SERVER_IP = ""
-    }
     
     stages {
         stage('Cleanup') {
             steps {
+                script{
+                    env.TEST_SERVER_IP = "52.23.224.120"
+                    env.PROD_SERVER_IP = ""
+                }
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
                 deleteDir()
