@@ -62,7 +62,7 @@ pipeline {
                 
                 // Connect to the EC2 instance and perform deployment steps
                 echo "Connecting to EC2 instance"
-                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html// && unzip -o PortfolioWebsite.zip && ./deploy.sh'"
+                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html// && unzip -o PortfolioWebsite.zip'"
             }
         }
     }
