@@ -44,19 +44,33 @@ pipeline {
                 }
             }
         }
-         stage('Deploy to EC2') {
+         stage('Push to Test Instance') {
             steps {
                 script {
-                    env.EC2_INSTANCE_IP = env.TEST_SERVER_IP
-                    env.EC2_INSTANCE_USERNAME = "ec2-user"
-                    env.EC2_INSTANCE_KEY = credentials('SSH_PROJECT_PRIVATE_KEY')
+                    // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
+                    def testInstanceIP = env.TEST_SERVER_IP
+                    
+                    // Replace 'test-instance-key' with the SSH key name or path to the private key for the test instance
+                    def testInstanceCredential = credentials('SSH-project')
+                    
+                    // Replace 'ec2-user' with the appropriate SSH user for your test instance (e.g., 'ubuntu', 'ec2-user')
+                    def testInstanceUser = "ec2-user"
+                    
+                    // Replace 'my-final-project-bucket' with the name of your S3 bucket
+                    def s3BucketName = "my-final-project-bucket"
+                    
+                    // Copy the zip file from S3 to the test instance using SCP
+                    echo "Copying zip file to test instance"
+                    sh "scp -i ${testInstanceKey} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${testInstanceUser}@${testInstanceIP}:~"
+                    
+                    // SSH into the test instance and unzip the files
+                    echo "Unzipping files on test instance"
+                    sh "ssh -i ${testInstanceKey} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
+                    
+                    // Clean up the zip file on the test instance
+                    echo "Cleaning up zip file on test instance"
+                    sh "ssh -i ${testInstanceKey} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'rm PortfolioWebsite.zip'"
                 }
-                // Copy the zip file to the EC2 instance using SCP
-                echo "Deploying to EC2 instance"
-                sh "scp -i ${env.EC2_INSTANCE_KEY} PortfolioWebsite.zip ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP}:/var/www/html/"
-                // Connect to the EC2 instance and perform deployment steps
-                echo "Connecting to EC2 instance"
-                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html/ && unzip -o PortfolioWebsite.zip'"
             }
         }
     }
