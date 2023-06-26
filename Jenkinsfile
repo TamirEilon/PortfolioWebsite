@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
-                script{
+                script {
                     env.TEST_SERVER_IP = "52.23.224.120"
                     env.PROD_SERVER_IP = ""
                 }
@@ -52,9 +52,9 @@ pipeline {
          stage('Deploy to EC2') {
             steps {
                 script {
-                    env.EC2_INSTANCE_IP = TEST_SERVER_IP
+                    env.EC2_INSTANCE_IP = env.TEST_SERVER_IP
                     env.EC2_INSTANCE_USERNAME = "ec2-user"
-                    env.EC2_INSTANCE_KEY = credentials('SSH-project_PRIVATE_KEY')
+                    env.EC2_INSTANCE_KEY = credentials('SSH_PROJECT_PRIVATE_KEY')
                 }
                 // Copy the zip file to the EC2 instance using SCP
                 echo "Deploying to EC2 instance"
@@ -62,7 +62,7 @@ pipeline {
                 
                 // Connect to the EC2 instance and perform deployment steps
                 echo "Connecting to EC2 instance"
-                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html// && unzip -o PortfolioWebsite.zip'"
+                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html/ && unzip -o PortfolioWebsite.zip'"
             }
         }
     }
