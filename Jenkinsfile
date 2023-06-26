@@ -47,6 +47,7 @@ pipeline {
         stage('Push to Test Instance') {
             steps {
                 script {
+                    
                     // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
                     def testInstanceIP = env.TEST_SERVER_IP
                     echo "worked"
@@ -63,7 +64,7 @@ pipeline {
                     def s3BucketName = "my-final-project-bucket"
                     echo "worked 4"
                     
-                    // Copy the zip file from S3 to the test instance using SCP
+                    // Copy the zip file from the Jenkins workspace to the test instance using SCP
                     echo "Copying zip file to test instance"
                     sh "scp -i ${testInstanceCredential} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${testInstanceUser}@${testInstanceIP}:~"
                     echo "worked 5"
