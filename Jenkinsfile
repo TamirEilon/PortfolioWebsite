@@ -50,7 +50,7 @@ pipeline {
                     // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
                     def testInstanceIP = env.TEST_SERVER_IP
                     
-                    // Replace 'test-instance-key' with the SSH key name or path to the private key for the test instance
+                    // Replace 'SSH-project' with the ID of your SSH credential in Jenkins
                     def testInstanceCredential = credentials('SSH-project')
                     
                     // Replace 'ec2-user' with the appropriate SSH user for your test instance (e.g., 'ubuntu', 'ec2-user')
