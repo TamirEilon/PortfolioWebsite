@@ -3,10 +3,7 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
-                script {
-                    env.TEST_SERVER_IP = "52.23.224.120"
-                    env.PROD_SERVER_IP = ""
-                }
+                
                 // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
                 deleteDir()
@@ -49,7 +46,7 @@ pipeline {
                 script {
                     
                     // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
-                    def testInstanceIP = env.TEST_SERVER_IP
+                    def testInstanceIP = "52.23.224.120"
                     echo "worked"
                     
                     // Replace 'SSH-project' with the ID of your SSH credential in Jenkins
