@@ -49,53 +49,21 @@ pipeline {
             }
         }
       
-        stage('Deploy to EC2') {
+         stage('Deploy to EC2') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'SSH-project', keyFileVariable: 'KEY_FILE')]) {
-                        withCredentials([
-                            [
-                                $class: 'AmazonWebServicesCredentialsBinding',
-                                credentialsId: 'AWS',
-                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                            ]
-                        ]) {
-                            sshagent(['SSH-project']) {
-                                // Connect to the EC2 instance and execute commands remotely
-                                echo "Deploying to the test server"
-                                sh '''
-                                        ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
-                                        # Navigate to the desired directory
-                                        cd /var/www/html/
-                                        # Download the zip file from S3
-                                        aws s3 cp s3://my-final-project-bucket/PortfolioWebsite.zip .
-                                        # Unzip the file
-                                        unzip -o PortfolioWebsite.zip
-                                        # Clean up the zip file
-                                        rm PortfolioWebsite.zip
-                                        # Install & start Apache
-                                        sudo yum install httpd php -y
-                                        sudo service httpd start
-                                        # Change permissions & ownerships
-                                        sudo chown -R apache:apache /var/www/html/
-                                        sudo chmod -R 755 /var/www/html/
-                                        # Restart the Apache service
-                                        sudo service httpd restart
-                                        # Enable & start the service
-                                        sudo systemctl enable apache.service
-                                        sudo systemctl start apache.service
-                                        # Fix the limit-hit issue
-                                        sudo systemctl reset-failed apache.service
-                                        sudo systemctl start apache.service
-                                    '
-                                '''
-                            }
-                        }
-                    }
+                    env.EC2_INSTANCE_IP = TEST_SERVER_IP
+                    env.EC2_INSTANCE_USERNAME = "ec2-user"
+                    env.EC2_INSTANCE_KEY = credentials('SSH-project_PRIVATE_KEY')
                 }
+                // Copy the zip file to the EC2 instance using SCP
+                echo "Deploying to EC2 instance"
+                sh "scp -i ${env.EC2_INSTANCE_KEY} PortfolioWebsite.zip ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP}:/var/www/html/"
+                
+                // Connect to the EC2 instance and perform deployment steps
+                echo "Connecting to EC2 instance"
+                sh "ssh -i ${env.EC2_INSTANCE_KEY} ${env.EC2_INSTANCE_USERNAME}@${env.EC2_INSTANCE_IP} 'cd /var/www/html// && unzip -o PortfolioWebsite.zip && ./deploy.sh'"
             }
         }
-        // Additional stages and steps
     }
 }
