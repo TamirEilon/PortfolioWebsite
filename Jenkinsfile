@@ -63,7 +63,7 @@ pipeline {
                     
                     // Copy the zip file from the Jenkins workspace to the test instance using SCP
                     echo "Copying zip file to test instance"
-                    sh "scp -i ${testInstanceCredential} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${testInstanceUser}@${testInstanceIP}:~"
+                    sh "ls"
                     echo "worked 5"
                     // SSH into the test instance and unzip the files
                     echo "Unzipping files on test instance"
