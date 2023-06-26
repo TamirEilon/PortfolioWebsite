@@ -44,7 +44,7 @@ pipeline {
                 }
             }
         }
-         stage('Push to Test Instance') {
+        stage('Push to Test Instance') {
             steps {
                 script {
                     // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
@@ -61,15 +61,15 @@ pipeline {
                     
                     // Copy the zip file from S3 to the test instance using SCP
                     echo "Copying zip file to test instance"
-                    sh "scp -i ${testInstanceKey} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${testInstanceUser}@${testInstanceIP}:~"
+                    sh "scp -i ${testInstanceCredential} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${testInstanceUser}@${testInstanceIP}:~"
                     
                     // SSH into the test instance and unzip the files
                     echo "Unzipping files on test instance"
-                    sh "ssh -i ${testInstanceKey} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
+                    sh "ssh -i ${testInstanceCredential} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
                     
                     // Clean up the zip file on the test instance
                     echo "Cleaning up zip file on test instance"
-                    sh "ssh -i ${testInstanceKey} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'rm PortfolioWebsite.zip'"
+                    sh "ssh -i ${testInstanceCredential} -o StrictHostKeyChecking=no ${testInstanceUser}@${testInstanceIP} 'rm PortfolioWebsite.zip'"
                 }
             }
         }
