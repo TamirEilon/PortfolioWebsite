@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     echo "Clearing /var/www/html folder"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm -rf /var/www/html/*'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
                     echo "Clearing /var/www/html folder completed"
 
                     echo "Copying zip file to EC2 instance"
