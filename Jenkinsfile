@@ -78,6 +78,16 @@ pipeline {
                         echo "The Apache website is up and running"
                     }
                 }
-            }  
+            }
+        stage('Curl Test') {
+                steps {
+                    script {
+                        echo "Running curl test"
+                        sh "curl $(TEST_SERVER_IP)"
+                        // Add any assertions or validations based on the curl response
+                    }
+                }
+            }
+
     }
 }
