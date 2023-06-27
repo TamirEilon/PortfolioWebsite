@@ -55,9 +55,9 @@ pipeline {
                     echo "Clearing /var/www/html folder completed"
 
                     
-                    //echo "Copying zip file to EC2 instance"
-                    //sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
-                    //echo "Copying zip file completed"
+                    echo "Copying zip file to EC2 instance"
+                    sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
+                    echo "Copying zip file completed"
 
                     //echo "Unzipping files on EC2 instance"
                     //sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
