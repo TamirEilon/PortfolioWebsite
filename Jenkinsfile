@@ -50,20 +50,16 @@ pipeline {
             steps {
                 script {
                     echo "Copying zip file to EC2 instance"
-            sh "scp -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no PortfolioWebsite.zip ec2-user@54.198.88.216:~/"
-            echo "Copying zip file completed"
+                    sh "scp -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
+                    echo "Copying zip file completed"
 
-            echo "Moving zip file to /var/www/html"
-            sshagent(['/Users/tamireilon/Downloads/FinalProjectKey.pem']) {
-                sh "ssh -o StrictHostKeyChecking=no ec2-user@54.198.88.216 'sudo mv ~/PortfolioWebsite.zip /var/www/html/'"
-                    //echo "Unzipping files on EC2 instance"
-                    //sh "ssh -i ${TEST_INSTANCE_CREDENTIAL} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
-
+                    echo "Unzipping files on EC2 instance"
+                    sh "ssh -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
+                    echo "Unzipping files on EC2 instance completed"
                     //echo "Cleaning up zip file on EC2 instance"
                     //sh "ssh -i ${TEST_INSTANCE_CREDENTIAL} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm PortfolioWebsite.zip'"
                 }
             }
         }
     }
-}
 }
