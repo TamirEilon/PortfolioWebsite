@@ -10,18 +10,40 @@ pipeline {
             steps {
                 echo "Cleaning up"
                 deleteDir()
+                echo "cleaning up finished"
             }
         }
         stage('Clone') {
             steps {
                 echo "Cloning from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
+                echo "cloning from git finished"
             }
         }
         stage('Zip Files') {
             steps {
                 echo "Compressing files"
                 sh 'zip -r PortfolioWebsite.zip .'
+                echo "zipping files finished"
+            }
+        }
+        stage('Upload to S3') {
+            steps {
+                script {
+                    withCredentials([
+                        [
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: 'AWS',
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]
+                    ]) {
+                        // Upload the zip file to an S3 bucket using the AWS CLI
+                        echo "Uploading to the cloud"
+                        sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
+                        echo "uploading to s3 finished"
+                    }
+                }
             }
         }
         stage('Upload to EC2') {
