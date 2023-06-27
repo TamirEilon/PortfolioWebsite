@@ -63,7 +63,7 @@ pipeline {
                     echo "Unzipping files on EC2 instance completed"
                     
                     echo "Cleaning up zip file on EC2 instance"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm -f PortfolioWebsite.zip'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm PortfolioWebsite.zip'"
                 }
             }
         }
