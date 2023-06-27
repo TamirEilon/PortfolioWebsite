@@ -83,7 +83,7 @@ pipeline {
                 steps {
                     script {
                         echo "Running curl test"
-                        sh "curl $(TEST_SERVER_IP)"
+                        sh "curl ${TEST_SERVER_IP}"
                         // Add any assertions or validations based on the curl response
                     }
                 }
