@@ -69,6 +69,10 @@ pipeline {
         stage('Run the Apache server & website') {
             steps {
                 script {
+                    echo "Adding permissions to the user"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ec2-user /var/www/html"
+                    echo "added permissions"
+                    
                     echo "Running the apache server and website"
                     sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart"
                     echo "The Apache website is up and running"
