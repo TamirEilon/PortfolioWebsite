@@ -4,6 +4,7 @@ pipeline {
         TEST_SERVER_IP = "54.198.88.216"
         TEST_INSTANCE_CREDENTIAL = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
         TEST_INSTANCE_USER = "ec2-user"
+        KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
     }
     stages {
         stage('Cleanup') {
@@ -49,12 +50,16 @@ pipeline {
         stage('Upload to EC2') {
             steps {
                 script {
+                    echo "Clearing /var/www/html folder"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm -rf ${remotePath}/*'"
+                    echo "Clearing /var/www/html folder completed"
+                    
                     echo "Copying zip file to EC2 instance"
-                    sh "scp -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
+                    sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
                     echo "Copying zip file completed"
 
                     echo "Unzipping files on EC2 instance"
-                    sh "ssh -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
                     echo "Unzipping files on EC2 instance completed"
                     //echo "Cleaning up zip file on EC2 instance"
                     //sh "ssh -i ${TEST_INSTANCE_CREDENTIAL} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm PortfolioWebsite.zip'"
