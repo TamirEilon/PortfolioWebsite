@@ -1,5 +1,15 @@
 pipeline {
     agent any
+    environment {
+        TEST_SERVER_IP = "54.198.88.216"
+        PROD_SERVER_IP = ""
+        TEST_INSTANCE_CREDENTIAL = credentials('SSH-project')
+        TEST_INSTANCE_USER = "ec2-user"
+        S3_BUCKET_NAME = "my-final-project-bucket"
+        TEST_REGION = "us-east-1a"
+        
+        // Add more environment variables as needed
+    }
     stages {
         stage('Cleanup') {
             steps {
@@ -44,26 +54,9 @@ pipeline {
         stage('Push to Test Instance') {
             steps {
                 script {
-                    
-                    // Replace 'test-instance-ip' with the actual IP or hostname of your test instance
-                    def testInstanceIP = "52.23.224.120"
-                    echo "worked"
-                    
-                    // Replace 'SSH-project' with the ID of your SSH credential in Jenkins
-                    def testInstanceCredential = credentials('SSH-project')
-                    echo "worked 2"
-                    
-                    // Replace 'ec2-user' with the appropriate SSH user for your test instance (e.g., 'ubuntu', 'ec2-user')
-                    def testInstanceUser = "ec2-user"
-                    echo "worked 3"
-                    
-                    // Replace 'my-final-project-bucket' with the name of your S3 bucket
-                    def s3BucketName = "my-final-project-bucket"
-                    echo "worked 4"
-                    
                     // Copy the zip file from the Jenkins workspace to the test instance using SCP
                     echo "Copying zip file to test instance"
-                    sh "ls"
+                    sh "ssh -i StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
                     echo "worked 5"
                     // SSH into the test instance and unzip the files
                     echo "Unzipping files on test instance"
