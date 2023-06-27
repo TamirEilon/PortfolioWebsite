@@ -6,7 +6,7 @@ pipeline {
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
     }
     stages {
-        stage('Get EC2 Instance IP') {
+        stage('Get EC2 Instance TEST IP') {
             steps {
                 script {
                     // Retrieve the EC2 instance IP address dynamically using the AWS CLI
@@ -16,7 +16,7 @@ pipeline {
                 }
             }
         }
-        stage('Get EC2 Instance IP') {
+        stage('Get EC2 Instance PROD IP') {
             steps {
                 script {
                     // Retrieve the EC2 instance IP address dynamically using the AWS CLI
