@@ -2,7 +2,6 @@ pipeline {
     agent any
     environment {
         TEST_SERVER_IP = "54.198.88.216"
-        TEST_INSTANCE_CREDENTIAL = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
     }
@@ -62,8 +61,9 @@ pipeline {
                     echo "Unzipping files on EC2 instance"
                     sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip -o PortfolioWebsite.zip -d /var/www/html'"
                     echo "Unzipping files on EC2 instance completed"
-                    //echo "Cleaning up zip file on EC2 instance"
-                    //sh "ssh -i ${TEST_INSTANCE_CREDENTIAL} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm PortfolioWebsite.zip'"
+                    
+                    echo "Cleaning up zip file on EC2 instance"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm PortfolioWebsite.zip'"
                 }
             }
         }
