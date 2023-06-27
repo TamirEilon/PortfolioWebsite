@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     echo "Copying zip file to EC2 instance"
-                    sh "scp -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no PortfolioWebsite.zip ec2-user@54.198.88.216:/var/www/html/"
+                    sh "scp -i /Users/tamireilon/Downloads/FinalProjectKey.pem -o StrictHostKeyChecking=no PortfolioWebsite.zip ec2-user@54.198.88.216:~/"
                     echo "worked 1"
                     //echo "Unzipping files on EC2 instance"
                     //sh "ssh -i ${TEST_INSTANCE_CREDENTIAL} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'unzip PortfolioWebsite.zip -d /var/www/html'"
