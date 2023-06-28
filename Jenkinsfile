@@ -49,9 +49,10 @@ pipeline {
         stage('Upload to EC2') {
             steps {
                 script {
-                    echo "Adding permissions to the user"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ec2-user /var/www/html'"
-                    echo "Added permissions"
+                    echo "Setting ownership and permissions"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ${TEST_INSTANCE_USER}:${TEST_INSTANCE_USER} /var/www/html'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod -R 755 /var/www/html'"
+                    echo "Setting ownership and permissions completed"
                     
                     echo "Clearing /var/www/html folder"
                     sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
