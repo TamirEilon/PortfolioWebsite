@@ -1,11 +1,21 @@
 pipeline {
     agent any
     environment {
-        TEST_SERVER_IP = "54.86.61.103"
+        // TEST_SERVER_IP = "54.86.61.103"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
     }
     stages {
+        stage('Get EC2 Instance IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id FinalProject - Test --query 'Reservations[0].Instances[0].PublicIpAddress' --output text", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${TEST_SERVER_IP}"
+                }
+            }
+        }
         stage('Cleanup') {
             steps {
                 echo "Cleaning up"
