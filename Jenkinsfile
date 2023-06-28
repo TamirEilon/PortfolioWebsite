@@ -49,6 +49,10 @@ pipeline {
         stage('Upload to EC2') {
             steps {
                 script {
+                    echo "Adding permissions to the user"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ec2-user /var/www/html'"
+                    echo "Added permissions"
+                    
                     echo "Clearing /var/www/html folder"
                     sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
                     echo "Clearing /var/www/html folder completed"
@@ -69,10 +73,6 @@ pipeline {
         stage('Run the Apache server & website') {
                 steps {
                     script {
-                        echo "Adding permissions to the user"
-                        sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ec2-user /var/www/html'"
-                        echo "Added permissions"
-            
                         echo "Running the Apache server and website"
                         sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
                         echo "The Apache website is up and running"
