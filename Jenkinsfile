@@ -1,35 +1,56 @@
 pipeline {
     agent any
-    
+    environment {
+        TEST_INSTANCE_USER = "ec2-user"
+        KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
+        AWS_REGION = "us-east-1"
+        DB_HOST = "database-host"
+        DB_PORT = "database-port"
+        DB_USER = "database-username"
+        DB_PASSWORD = "database-password"
+    }
     stages {
+        stage('Get EC2 Instance Test IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${TEST_SERVER_IP}"
+                }
+            }
+        }
+        stage('Get EC2 Instance Prod IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    PROD_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0f7b247ad6431349d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${PROD_SERVER_IP}"
+                }
+            }
+        }
         stage('Cleanup') {
             steps {
-                script{
-                    env.TEST_SERVER_IP = "52.23.224.120"
-                    env.PROD_SERVER_IP = ""
-                }
-                // Clean up the workspace before pulling from GitHub
                 echo "Cleaning up"
                 deleteDir()
+                echo "cleaning up finished"
             }
         }
-       
         stage('Clone') {
             steps {
-                // Clone your project repository from GitHub
                 echo "Cloning from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
+                echo "cloning from git finished"
             }
         }
-        
         stage('Zip Files') {
             steps {
-                // Zip the files from the cloned repository
                 echo "Compressing files"
                 sh 'zip -r PortfolioWebsite.zip .'
+                echo "zipping files finished"
             }
         }
-      
         stage('Upload to S3') {
             steps {
                 script {
@@ -44,58 +65,88 @@ pipeline {
                         // Upload the zip file to an S3 bucket using the AWS CLI
                         echo "Uploading to the cloud"
                         sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
+                        echo "uploading to s3 finished"
                     }
                 }
             }
         }
-      
-        stage('Deploy to EC2') {
+        stage('Upload to EC2') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'SSH-project', keyFileVariable: 'KEY_FILE')]) {
-                        withCredentials([
-                            [
-                                $class: 'AmazonWebServicesCredentialsBinding',
-                                credentialsId: 'AWS',
-                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                            ]
-                        ]) {
-                            sshagent(['SSH-project']) {
-                                // Connect to the EC2 instance and execute commands remotely
-                                echo "Deploying to the test server"
-                                sh '''
-                                        ssh -o StrictHostKeyChecking=no -i $KEY_FILE ec2-user@$TEST_SERVER_IP
-                                        # Navigate to the desired directory
-                                        cd /var/www/html/
-                                        # Download the zip file from S3
-                                        aws s3 cp s3://my-final-project-bucket/PortfolioWebsite.zip .
-                                        # Unzip the file
-                                        unzip -o PortfolioWebsite.zip
-                                        # Clean up the zip file
-                                        rm PortfolioWebsite.zip
-                                        # Install & start Apache
-                                        sudo yum install httpd php -y
-                                        sudo service httpd start
-                                        # Change permissions & ownerships
-                                        sudo chown -R apache:apache /var/www/html/
-                                        sudo chmod -R 755 /var/www/html/
-                                        # Restart the Apache service
-                                        sudo service httpd restart
-                                        # Enable & start the service
-                                        sudo systemctl enable apache.service
-                                        sudo systemctl start apache.service
-                                        # Fix the limit-hit issue
-                                        sudo systemctl reset-failed apache.service
-                                        sudo systemctl start apache.service
-                                    '
-                                '''
-                            }
-                        }
-                    }
+                    echo "Setting ownership and permissions"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ${TEST_INSTANCE_USER}:${TEST_INSTANCE_USER} /var/www/html'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod -R 755 /var/www/html'"
+                    echo "Setting ownership and permissions completed"
+                    
+                    echo "Clearing /var/www/html folder"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
+                    echo "Clearing /var/www/html folder completed"
+
+                    echo "Copying zip file to EC2 instance"
+                    sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
+                    echo "Copying zip file completed"
+
+                    echo "Unzipping files on EC2 instance"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo unzip -o /var/www/html/PortfolioWebsite.zip -d /var/www/html'"
+                    echo "Unzipping files on EC2 instance completed"
+                    
+                    echo "Cleaning up zip file on EC2 instance"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm /var/www/html/PortfolioWebsite.zip'"
                 }
             }
         }
-        // Additional stages and steps
+        stage('Run the Apache server & website') {
+                steps {
+                    script {
+                        echo "Running the Apache server and website"
+                        sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
+                        echo "The Apache website is up and running"
+                    }
+                }
+            }
+        stage('Curl Test') {
+                steps {
+                    script {
+                        echo "Running curl test"
+                        sh "curl ${TEST_SERVER_IP}"
+                        // Add any assertions or validations based on the curl response
+                    }
+                }
+            }
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image"
+                sh 'docker build -t my-website .'
+                echo "Docker image built"
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                echo "Running Docker container"
+                sh "docker run -d -p 8080:80 --name my-container --env DB_HOST=${DB_HOST} --env DB_PORT=${DB_PORT} --env DB_USER=${DB_USER} --env DB_PASSWORD=${DB_PASSWORD} my-website"
+                echo "Docker container running"
+            }
+        }
+
+        stage('Curl Test') {
+            steps {
+                echo "Running curl test"
+                sh "curl http://localhost:8080"
+                // Add any assertions or validations based on the curl response
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo "Cleaning up"
+                sh "docker stop my-container"
+                sh "docker rm my-container"
+                echo "Cleanup finished"
+            }
+        }
+    }
+}
+
     }
 }
