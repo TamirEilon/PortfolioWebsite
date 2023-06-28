@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        TEST_SERVER_IP = "54.198.88.216"
+        TEST_SERVER_IP = "54.86.61.103"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
     }
