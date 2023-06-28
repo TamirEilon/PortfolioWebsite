@@ -12,7 +12,7 @@ pipeline {
                 script {
                     echo "Fetching EC2 instance IP address"
                     // Run AWS CLI command to fetch the IP address of the EC2 instance
-                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id FinalProject - Test --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
                     echo "EC2 instance IP: ${TEST_SERVER_IP}"
                 }
             }
