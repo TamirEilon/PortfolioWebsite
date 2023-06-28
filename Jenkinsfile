@@ -113,40 +113,4 @@ pipeline {
                     }
                 }
             }
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image"
-                sh 'docker build -t my-website .'
-                echo "Docker image built"
-            }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                echo "Running Docker container"
-                sh "docker run -d -p 8080:80 --name my-container --env DB_HOST=${DB_HOST} --env DB_PORT=${DB_PORT} --env DB_USER=${DB_USER} --env DB_PASSWORD=${DB_PASSWORD} my-website"
-                echo "Docker container running"
-            }
-        }
-
-        stage('Curl Test') {
-            steps {
-                echo "Running curl test"
-                sh "curl http://localhost:8080"
-                // Add any assertions or validations based on the curl response
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                echo "Cleaning up"
-                sh "docker stop my-container"
-                sh "docker rm my-container"
-                echo "Cleanup finished"
-            }
-        }
     }
-}
-
-    }
-}
