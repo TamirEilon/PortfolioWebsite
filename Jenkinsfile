@@ -1,19 +1,28 @@
 pipeline {
     agent any
     environment {
-        // TEST_SERVER_IP = "54.86.61.103"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
         AWS_REGION = "us-east-1"
     }
     stages {
-        stage('Get EC2 Instance IP') {
+        stage('Get EC2 Instance Test IP') {
             steps {
                 script {
                     echo "Fetching EC2 instance IP address"
                     // Run AWS CLI command to fetch the IP address of the EC2 instance
                     TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
                     echo "EC2 instance IP: ${TEST_SERVER_IP}"
+                }
+            }
+        }
+        stage('Get EC2 Instance Prod IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0f7b247ad6431349d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${PROD_SERVER_IP}"
                 }
             }
         }
