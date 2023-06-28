@@ -4,7 +4,7 @@ pipeline {
         // TEST_SERVER_IP = "54.86.61.103"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
-        AWS_REGION = "us-east-1a"
+        AWS_REGION = "us-east-1"
     }
     stages {
         stage('Get EC2 Instance IP') {
