@@ -96,22 +96,22 @@ pipeline {
             }
         }
         stage('Run the Apache server & website') {
-                steps {
-                    script {
-                        echo "Running the Apache server and website"
-                        sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
-                        echo "The Apache website is up and running"
-                    }
+            steps {
+                script {
+                    echo "Running the Apache server and website"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
+                    echo "The Apache website is up and running"
                 }
             }
+        }
         stage('Curl Test') {
-                steps {
-                    script {
-                        echo "Running curl test"
-                        sh "curl ${TEST_SERVER_IP}"
-                        // Add any assertions or validations based on the curl response
-                    }
+            steps {
+                script {
+                    echo "Running curl test"
+                    sh "curl ${TEST_SERVER_IP}"
+                    // Add any assertions or validations based on the curl response
                 }
             }
+        }
     }
 }
