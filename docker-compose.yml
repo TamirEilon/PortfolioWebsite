@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8889:80"
+      - "8890:80"
 #    volumes:
 #      - .:/usr/local/apache2/htdocs/
   db:
@@ -13,10 +13,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: your_password
-      MYSQL_DATABASE: your_database
-      MYSQL_USER: your_username
-      MYSQL_PASSWORD: your_password
+      MYSQL_ROOT_PASSWORD: T123456
+      MYSQL_DATABASE: first_database
+      MYSQL_USER: tamireilon
+      MYSQL_PASSWORD: T123456
     volumes:
       - ./mysql-data:/var/lib/mysql
 
