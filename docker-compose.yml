@@ -1,0 +1,22 @@
+version: '3'
+services:
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8889:80"
+#    volumes:
+#      - .:/usr/local/apache2/htdocs/
+  db:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password
+      MYSQL_DATABASE: your_database
+      MYSQL_USER: your_username
+      MYSQL_PASSWORD: your_password
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+
