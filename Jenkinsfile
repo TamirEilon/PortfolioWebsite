@@ -70,6 +70,7 @@ pipeline {
                 }
             }
         }
+        """
         stage('Upload to EC2') {
             steps {
                 script {
@@ -94,7 +95,7 @@ pipeline {
                     sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm /var/www/html/PortfolioWebsite.zip'"
                 }
             }
-        }
+         }
         stage('Run the Apache server & website') {
             steps {
                 script {
@@ -110,6 +111,28 @@ pipeline {
                     echo "Running curl test"
                     sh "curl ${TEST_SERVER_IP}"
                     // Add any assertions or validations based on the curl response
+                }
+            }
+        }
+        """
+        stage('Install Docker and Docker Compose') {
+            steps {
+                echo "Installing Docker and Docker Compose on the EC2 instance"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -a -G docker ${TEST_INSTANCE_USER}'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo curl -L 'https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod +x /usr/local/bin/docker-compose'"
+                echo "Docker and Docker Compose installation completed"
+            }
+        }
+
+        stage('Deploy Docker Compose') {
+            steps {
+                echo "Deploying Docker Compose"
+                script {
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
                 }
             }
         }
