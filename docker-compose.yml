@@ -5,18 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8890:80"
-#    volumes:
-#      - .:/usr/local/apache2/htdocs/
-  db:
-    image: mysql:8
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: T123456
-      MYSQL_DATABASE: first_database
-      MYSQL_USER: tamireilon
-      MYSQL_PASSWORD: T123456
-    volumes:
-      - ./mysql-data:/var/lib/mysql
+      - "8083:80"
+    restart: always
+
 
