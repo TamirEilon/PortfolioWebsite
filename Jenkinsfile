@@ -106,7 +106,7 @@ pipeline {
         stage('Deploy Docker Compose') {
             steps {
                 echo "Deploying Docker Compose"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && sudo docker-compose up -d'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/ && sudo docker-compose up -d'"
             }
         }
     }
