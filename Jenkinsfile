@@ -38,103 +38,72 @@ pipeline {
             }
         }
         stage('Clone') {
-            steps {
-                echo "Cloning from GitHub"
-                git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
-                echo "cloning from git finished"
-            }
-        }
-        stage('Zip Files') {
-            steps {
-                echo "Compressing files"
-                sh 'zip -r PortfolioWebsite.zip .'
-                echo "zipping files finished"
-            }
-        }
-        stage('Upload to S3') {
-            steps {
-                script {
-                    withCredentials([
-                        [
-                            $class: 'AmazonWebServicesCredentialsBinding',
-                            credentialsId: 'AWS',
-                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                        ]
-                    ]) {
-                        // Upload the zip file to an S3 bucket using the AWS CLI
-                        echo "Uploading to the cloud"
-                        sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
-                        echo "uploading to s3 finished"
-                    }
-                }
-            }
-        }
-        """
-        stage('Upload to EC2') {
-            steps {
-                script {
-                    echo "Setting ownership and permissions"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ${TEST_INSTANCE_USER}:${TEST_INSTANCE_USER} /var/www/html'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod -R 755 /var/www/html'"
-                    echo "Setting ownership and permissions completed"
-                    
-                    echo "Clearing /var/www/html folder"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
-                    echo "Clearing /var/www/html folder completed"
+    steps {
+        echo "Cloning from GitHub"
+        git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
+        echo "Cloning from git finished"
+    }
+}
 
-                    echo "Copying zip file to EC2 instance"
-                    sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
-                    echo "Copying zip file completed"
+stage('Zip Files') {
+    steps {
+        echo "Compressing files"
+        sh 'zip -r PortfolioWebsite.zip .'
+        echo "Zipping files finished"
+    }
+}
 
-                    echo "Unzipping files on EC2 instance"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo unzip -o /var/www/html/PortfolioWebsite.zip -d /var/www/html'"
-                    echo "Unzipping files on EC2 instance completed"
-                    
-                    echo "Cleaning up zip file on EC2 instance"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm /var/www/html/PortfolioWebsite.zip'"
-                }
-            }
-         }
-        stage('Run the Apache server & website') {
-            steps {
-                script {
-                    echo "Running the Apache server and website"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
-                    echo "The Apache website is up and running"
-                }
-            }
-        }
-        stage('Curl Test') {
-            steps {
-                script {
-                    echo "Running curl test"
-                    sh "curl ${TEST_SERVER_IP}"
-                    // Add any assertions or validations based on the curl response
-                }
+stage('Upload to S3') {
+    steps {
+        script {
+            withCredentials([
+                [
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'AWS',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]
+            ]) {
+                // Upload the zip file to an S3 bucket using the AWS CLI
+                echo "Uploading to the cloud"
+                sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
+                echo "Uploading to S3 finished"
             }
         }
-        """
-        stage('Install Docker and Docker Compose') {
-            steps {
-                echo "Installing Docker and Docker Compose on the EC2 instance"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -a -G docker ${TEST_INSTANCE_USER}'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod +x /usr/local/bin/docker-compose'"
-                echo "Docker and Docker Compose installation completed"
-            }
-        }
+    }
+}
 
-        stage('Deploy Docker Compose') {
-            steps {
-                echo "Deploying Docker Compose"
-                script {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
-                }
-            }
+stage('Upload to EC2') {
+    steps {
+        script {
+            echo "Setting ownership and permissions"
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chown -R ${TEST_INSTANCE_USER}:${TEST_INSTANCE_USER} /var/www/html'"
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod -R 755 /var/www/html'"
+            echo "Setting ownership and permissions completed"
+
+            echo "Clearing /var/www/html folder"
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo rm -rf /var/www/html/*'"
+            echo "Clearing /var/www/html folder completed"
+
+            echo "Copying zip file to EC2 instance"
+            sh "scp -i ${KEY_PATH} -o StrictHostKeyChecking=no PortfolioWebsite.zip ${TEST_INSTANCE_USER}@${TEST_SERVER_IP}:/var/www/html"
+            echo "Copying zip file completed"
+
+            echo "Unzipping files on EC2 instance"
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo unzip -o /var/www/html/PortfolioWebsite.zip -d /var/www/html'"
+            echo "Unzipping files on EC2 instance completed"
+
+            echo "Cleaning up zip file on EC2 instance"
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'rm /var/www/html/PortfolioWebsite.zip'"
+        }
+    }
+}
+
+stage('Deploy Docker Compose') {
+    steps {
+        echo "Deploying Docker Compose"
+        script {
+            sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
         }
     }
 }
