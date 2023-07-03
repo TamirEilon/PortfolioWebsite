@@ -109,5 +109,12 @@ pipeline {
                 sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/ && sudo docker-compose up -d'"
             }
         }
+        stage('Curl Test') {
+            steps {
+                echo "Performing Curl Test"
+                sh "curl http://${TEST_SERVER_IP}:8083"
+                echo "Curl Test completed"
+    }
+}
     }
 }
