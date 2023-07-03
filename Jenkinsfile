@@ -99,7 +99,7 @@ pipeline {
             steps {
                 echo "Deploying Docker Compose"
                 script {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/ && docker-compose up -d'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/ && sudo docker-compose up -d'"
                 }
             }
         }
