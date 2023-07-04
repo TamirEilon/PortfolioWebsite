@@ -44,29 +44,23 @@ pipeline {
                 echo "cloning from git finished"
             }
         }
-        stage('Zip Files') {
+        stage('Install Docker and Docker Compose') {
             steps {
-                echo "Compressing files"
-                sh 'zip -r PortfolioWebsite.zip .'
-                echo "zipping files finished"
+                echo "Installing Docker and Docker Compose on the EC2 instance"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -a -G docker ${TEST_INSTANCE_USER}'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod +x /usr/local/bin/docker-compose'"
+                echo "Docker and Docker Compose installation completed"
             }
         }
-        stage('Upload to S3') {
+        stage('Deploy Docker Compose') {
             steps {
+                echo "Deploying Docker Compose"
                 script {
-                    withCredentials([
-                        [
-                            $class: 'AmazonWebServicesCredentialsBinding',
-                            credentialsId: 'AWS',
-                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                        ]
-                    ]) {
-                        // Upload the zip file to an S3 bucket using the AWS CLI
-                        echo "Uploading to the cloud"
-                        sh '/usr/local/bin/aws s3 cp PortfolioWebsite.zip s3://my-final-project-bucket/'
-                        echo "uploading to s3 finished"
-                    }
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
                 }
             }
         }
@@ -95,42 +89,12 @@ pipeline {
                 }
             }
          }
-        stage('Run the Apache server & website') {
-            steps {
-                script {
-                    echo "Running the Apache server and website"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service httpd restart'"
-                    echo "The Apache website is up and running"
-                }
-            }
-        }
         stage('Curl Test') {
             steps {
                 script {
                     echo "Running curl test"
                     sh "curl ${TEST_SERVER_IP}"
                     // Add any assertions or validations based on the curl response
-                }
-            }
-        }
-        stage('Install Docker and Docker Compose') {
-            steps {
-                echo "Installing Docker and Docker Compose on the EC2 instance"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -a -G docker ${TEST_INSTANCE_USER}'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod +x /usr/local/bin/docker-compose'"
-                echo "Docker and Docker Compose installation completed"
-            }
-        }
-
-        stage('Deploy Docker Compose') {
-            steps {
-                echo "Deploying Docker Compose"
-                script {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
                 }
             }
         }
