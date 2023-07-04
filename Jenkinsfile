@@ -95,6 +95,18 @@ pipeline {
                 }
             }
         }
+        stage('Install Docker') {
+            steps {
+                echo "Installing Docker"
+                script {
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -aG docker ${TEST_INSTANCE_USER}'"
+                }
+                echo "Docker installation completed"
+            }
+        }
         stage('Install Docker Compose') {
             steps {
                 echo "Installing Docker Compose"
