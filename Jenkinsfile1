@@ -61,7 +61,7 @@ pipeline {
                     // Authenticating and connecting with DockerHub
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         // Logging in to DockerHub
-                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
 
                         // Push the image to DockerHub
                         sh "docker push ${IMAGE_NAME}:${version}"
