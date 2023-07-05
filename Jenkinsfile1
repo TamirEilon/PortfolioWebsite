@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with the version number & image name
-                    sh 'docker kill $$(docker ps -q) || true'
+                    sh "docker kill \$(docker ps -q) || true"
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
         
                     // Tag the image as latest
