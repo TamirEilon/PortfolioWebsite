@@ -70,12 +70,10 @@ pipeline {
         stage('Deploy to Test Server') {
             steps {
                 script {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'echo "worked"'"
-                    // docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}
+                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'echo \"worked\"'"
                 }
             }
         }
     }
 }
-
         
