@@ -71,8 +71,8 @@ pipeline {
             steps {
                 script {
                     // Connect to the test server using SSH
-                    sshagent(['SSH-project']) {
-                        withCredentials([sshUserPrivateKey(credentialsId: 'SSH-project', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                    sshagent(['ssh_instrances']) {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                             // SSH into the test server and pull the Docker image
                             sh "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i $SSH_KEY ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}'"
                         }
