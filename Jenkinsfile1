@@ -28,12 +28,8 @@ pipeline {
         }
         stage('Install Docker') {
             steps {
-                sh 'sudo curl -fsSL https://get.docker.com -o get-docker.sh'
-                sh 'sudo chmod +x get-docker.sh'
-                sh 'sudo usermod -aG docker $USER'
-                sh 'sudo systemctl enable docker'
-                sh 'sudo systemctl start docker'
-                echo 'Done installing Docker'
+                sh 'chmod +x docker_install.sh'
+                sh './docker_install.sh'
             }
         }
         stage('Install Docker Compose') {
