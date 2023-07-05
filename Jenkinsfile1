@@ -34,10 +34,8 @@ pipeline {
         }
         stage('Install Docker Compose') {
             steps {
-                sh 'sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
-                sh 'sudo chmod +x /usr/local/bin/docker-compose'
-                sh 'docker-compose --version'
-                echo 'Done installing docker-compose'
+                sh 'chmod +x docker_compose_install_install.sh'
+                sh './docker_composse_install.sh'
             }
         }
         stage('granting Docker access to the Jenkins user') {
@@ -48,7 +46,7 @@ pipeline {
         stage('Build and Push Docker Image') { // Build the Docker image with the version number & image name
             steps {
                 script {
-                    // The next few lines are mendatory in each VM we want to preform a build.
+                    // The next script is mendatory in each VM we want to preform a build.
                     // It clears the VM (much like a cleanup), in order for us to use the same
                     // elements and names (for containers and images)
 
