@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with the version number & image name
-                    sh "docker rmi $(docker images -q)" // Deletes all images on the EC2 instance
+                    sh "docker rmi \$(docker images -q)" // Deletes all images on the EC2 instance
                     sh "docker kill \$(docker ps -q) || true" // Kills all runing dockers on the EC2 instance, in order to use the 80 port again
                     sh "docker rm -f websitecontainer"
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
