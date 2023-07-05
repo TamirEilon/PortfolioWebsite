@@ -13,16 +13,16 @@ pipeline {
     stages {
         stage('Cleanup - cleaning the workspace') {
             steps {
-                echo "Cleaning up the workspace on the jenkins VM"
+                echo "Cleaning up the workspace on the Jenkins VM"
                 deleteDir()
-                echo "cleaning up finished"
+                echo "Cleaning up finished"
             }
         }
         stage('Clone Repository') {
             steps {
                 echo "Cloning the repository from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
-                echo "cloning from GitHub finished"
+                echo "Cloning from GitHub finished"
             }
         }
         stage('Install Docker') {
@@ -47,7 +47,7 @@ pipeline {
                     // Generate the version number based on the Git commit hash
                     def version = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
 
-                    // Build the Docker image with the version number & imgae name
+                    // Build the Docker image with the version number & image name
                     sh "docker build -t ${IMAGE_NAME}:${version} ."
 
                     // Tag the image as latest
@@ -60,23 +60,22 @@ pipeline {
 
                         // Push the image to DockerHub
                         sh "docker push ${IMAGE_NAME}:${version}"
-                        sh 'docker push ${IMAGE_NAME}:latest'
+                        sh "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
         }
         stage('Deploy to Test VM') {
-                steps {
-                    script {
-                        // Connect to the test VM using SSH
-                        sshagent(['SSH_project']) {
-                            withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh 'ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP}> "docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${version}"'
-                            }
+            steps {
+                script {
+                    // Connect to the test VM using SSH
+                    sshagent(['SSH_project']) {
+                        withCredentials([usernamePassword(credentialsId: 'SSH-project', usernameVariable: 'SSH_USERNAME', passwordVariable: 'SSH_PASSWORD')]) {
+                            sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} \"docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${version}\""
                         }
                     }
                 }
             }
         }
-    } 
+    }
 }
