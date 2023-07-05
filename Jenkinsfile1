@@ -2,9 +2,6 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_REPONAME = "new_website"
-        BUILD_VM_IP = "54.234.20.101"
-        TEST_VM_IP = "18.234.66.185"
-        PROD_VM_IP = "3.95.157.132"
         IMAGE_NAME = "website"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
@@ -12,6 +9,36 @@ pipeline {
         VERSION = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
     }
     stages {
+        stage('Get EC2 Instance Build IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-087bf23af1a6e1ef5 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${BUILD_VM_IP}"
+                }
+            }
+        }
+        stage('Get EC2 Instance Test IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${TEST_VM_IP}"
+                }
+            }
+        }
+        stage('Get EC2 Instance Prod IP') {
+            steps {
+                script {
+                    echo "Fetching EC2 instance IP address"
+                    // Run AWS CLI command to fetch the IP address of the EC2 instance
+                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0f7b247ad6431349d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    echo "EC2 instance IP: ${PROD_VM_IP}"
+                }
+            }
+        }
         stage('Cleanup - cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
