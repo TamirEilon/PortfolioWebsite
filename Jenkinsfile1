@@ -79,7 +79,11 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                         withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                             sshagent(['ssh_instrances']) {
-                                sh "ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} '$sshScript'"  // Use single quotes to preserve the script content
+                                sh """
+                                    ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} <<'ENDSSH'
+                                    $sshScript
+                                    ENDSSH
+                                """
                             }
                         }
                     }
