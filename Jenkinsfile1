@@ -43,10 +43,7 @@ pipeline {
         }
         stage('granting Docker access to the Jenkins user') {
             steps {
-                sh 'sudo usermod -aG docker jenkins'
-                sh 'sudo systemctl restart docker'
-                sh 'sudo chmod 666 /var/run/docker.sock'
-                sh 'sudo systemctl restart jenkins'
+                sh 'sudo usermod -a -G docker jenkins'
             }
         }
         stage('Build and Push Docker Image') {
