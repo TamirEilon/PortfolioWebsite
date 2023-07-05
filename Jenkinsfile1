@@ -100,12 +100,9 @@ pipeline {
         }
         stage('Curl Docker Website') {
             steps {
-                script {
-                    // Define the URL of the Docker website on the test VM
-                    def websiteUrl = "http://${TEST_SERVER_IP}"
-                    
+                script {                    
                     // Make the curl request
-                    sh "curl ${websiteUrl}"
+                    sh "curl http://${TEST_SERVER_IP}"
                 }
             }
         }
