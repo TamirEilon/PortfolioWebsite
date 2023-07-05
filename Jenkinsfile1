@@ -35,7 +35,7 @@ pipeline {
         stage('Install Docker Compose') {
             steps {
                 sh 'chmod +x docker_compose_install.sh'
-                sh './docker_composse_install.sh'
+                sh './docker_compose_install.sh'
             }
         }
         stage('granting Docker access to the Jenkins user') {
