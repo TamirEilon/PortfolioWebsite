@@ -64,6 +64,8 @@ pipeline {
                         sh "docker tag website $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
                     }
+                    // Run the Docker container using the pushed image
+                    sh "docker run -d -p 80:80 --name websitecontainer $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
                 }
             }
         }
