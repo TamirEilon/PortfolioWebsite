@@ -28,7 +28,8 @@ pipeline {
         stage('Install Docker') {
             steps {
                 sh 'curl -fsSL https://get.docker.com -o get-docker.sh'
-                sh 'sudo sh get-docker.sh'
+                sh 'sudo get-docker.sh'
+                sh 'chmod +x get-docker.sh'
                 sh 'sudo usermod -aG docker $USER'
                 sh 'sudo systemctl enable docker'
                 sh 'sudo systemctl start docker'
@@ -70,8 +71,8 @@ pipeline {
                 script {
                     // Connect to the test VM using SSH
                     sshagent(['SSH_project']) {
-                        withCredentials([usernamePassword(credentialsId: 'SSH-project', usernameVariable: 'SSH_USERNAME', passwordVariable: 'SSH_PASSWORD')]) {
-                            sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} \"docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${version}\""
+                        withCredentials([usernamePassword(credentialsId: 'SSH_project', usernameVariable: 'SSH_USERNAME', passwordVariable: 'SSH_PASSWORD')]) {
+                            sh "ssh -o StrictHostKeyChecking=no -o BatchMode=yes ${TEST_INSTANCE_USER}@${TEST_VM_IP} \"docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${version}\""
                         }
                     }
                 }
