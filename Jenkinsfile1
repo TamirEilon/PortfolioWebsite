@@ -51,8 +51,9 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with the version number & image name
-                    sh "cd PortfolioWebsite"
+                    dir("PortfolioWebsite") {
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
+                    }
         
                     // Tag the image as latest
                     sh "docker tag ${IMAGE_NAME}:${VERSION} ${IMAGE_NAME}:latest"
