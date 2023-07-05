@@ -63,8 +63,8 @@ pipeline {
                         // Logging in to DockerHub
                         sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
                         // Push the image to DockerHub
-                        sh "docker push ${IMAGE_NAME}:${version}"
-                        sh 'docker push ${IMAGE_NAME}:latest'
+                        sh "docker push ${DOCKERHUB_REPONAME}:${version}"
+                        sh 'docker push ${DOCKERHUB_REPONAME}:latest'
                     }
                 }
             }
