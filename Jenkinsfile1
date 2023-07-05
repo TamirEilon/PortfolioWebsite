@@ -71,8 +71,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                     sshagent(['ssh_instrances']) {
-                        sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP}'
-                        sh 'echo "worked"'
+                        sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"'
                     }
                 }
             }
