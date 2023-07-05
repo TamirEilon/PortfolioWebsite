@@ -53,6 +53,7 @@ pipeline {
                     // Build the Docker image with the version number & image name
                     dir("PortfolioWebsite") {
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
+                    }
         
                     // Tag the image as latest
                     sh "docker tag ${IMAGE_NAME}:${VERSION} ${IMAGE_NAME}:latest"
@@ -64,7 +65,6 @@ pipeline {
                         // Push the image to DockerHub
                         sh "docker tag website $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
-                        }
                     }
                 }
             }
