@@ -51,21 +51,21 @@ pipeline {
                 script {
                     // Generate the version number based on the Git commit hash
                     def version = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-
+        
                     // Build the Docker image with the version number & image name
                     sh "docker build -t ${IMAGE_NAME}:${version} ."
-
+        
                     // Tag the image as latest
                     sh "docker tag ${IMAGE_NAME}:${version} ${IMAGE_NAME}:latest"
-
+        
                     // Authenticating and connecting with DockerHub
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         // Logging in to DockerHub
-                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+        
                         // Push the image to DockerHub
                         sh "docker push ${IMAGE_NAME}:${version}"
-                        sh "docker push ${IMAGE_NAME}:latest"
+                        sh 'docker push ${IMAGE_NAME}:latest'
                     }
                 }
             }
