@@ -103,7 +103,7 @@ pipeline {
                 }
             }
         }
-        stage('Curl Docker Website') {
+        stage('Curl Docker Website - Test') {
             steps {
                 script {                    
                     // Make the curl request
@@ -133,7 +133,7 @@ pipeline {
                 }
             }
         }
-        stage('Curl Docker Website') {
+        stage('Curl Docker Website - Prod') {
             steps {
                 script {                    
                     // Make the curl request
