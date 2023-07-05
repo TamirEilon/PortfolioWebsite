@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_REPONAME = "my-website"
+        DOCKERHUB_REPONAME = "new_website"
         BUILD_VM_IP = "54.234.20.101"
         TEST_VM_IP = "3.80.73.170"
         PROD_VM_IP = "3.95.157.132"
@@ -51,6 +51,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with the version number & image name
+                    sh "cd PortfolioWebsite"
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
         
                     // Tag the image as latest
@@ -61,8 +62,9 @@ pipeline {
                         // Logging in to DockerHub
                         sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
                         // Push the image to DockerHub
-                        sh "docker push ${DOCKERHUB_REPONAME}/${IMAGE_NAME}:${VERSION}"
-                        sh "docker push ${DOCKERHUB_REPONAME}/${IMAGE_NAME}:latest"
+                        sh "docker tag website $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
+                        sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
+
                     }
                 }
             }
