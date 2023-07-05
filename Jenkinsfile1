@@ -95,6 +95,7 @@ pipeline {
                                 sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "${sshScript}"'
                                 // sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"'
                                 // sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker run -d -p 80:80 --name websitecontainer $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"'
+                            }
                         }
                     }
                 }
