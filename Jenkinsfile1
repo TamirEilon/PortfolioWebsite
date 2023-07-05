@@ -107,7 +107,7 @@ pipeline {
             steps {
                 script {                    
                     // Make the curl request
-                    sh "curl http://${TEST_SERVER_IP}"
+                    sh "curl http://${TEST_VM_IP}"
                 }
             }
         }
