@@ -1,49 +1,80 @@
 pipeline {
     agent any
     environment {
+        IMAGE_NAME = "website"
         TEST_INSTANCE_USER = "ec2-user"
         KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
         AWS_REGION = "us-east-1"
-        DB_HOST = "database-host"
-        DB_PORT = "database-port"
-        DB_USER = "database-username"
-        DB_PASSWORD = "database-password"
     }
     stages {
-        stage('Cleanup') {
+        stage('Cleanup - cleaning the workspace') {
             steps {
-                echo "Cleaning up"
+                echo "Cleaning up the workspace on the jenkins VM"
                 deleteDir()
                 echo "cleaning up finished"
             }
         }
-        stage('Clone') {
+        stage('Clone Repository') {
             steps {
-                echo "Cloning from GitHub"
+                echo "Cloning the repository from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
-                echo "cloning from git finished"
+                echo "cloning from GitHub finished"
             }
         }
-        stage('Install Docker and Docker Compose') {
+        stage('Install Docker') {
             steps {
-                echo "Installing Docker and Docker Compose on the EC2 Build Instance"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo yum update -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo amazon-linux-extras install docker -y'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo service docker start'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo usermod -a -G docker ${TEST_INSTANCE_USER}'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'sudo chmod +x /usr/local/bin/docker-compose'"
-                echo "Docker and Docker Compose installation completed"
+                sh 'curl -fsSL https://get.docker.com -o get-docker.sh'
+                sh 'sudo sh get-docker.sh'
+                sh 'sudo usermod -aG docker $USER'
+                sh 'sudo systemctl enable docker'
+                sh 'sudo systemctl start docker'
             }
         }
-        stage('Deploy Docker Compose') {
+
+        stage('Install Docker Compose') {
             steps {
-                echo "Deploying Docker Compose"
+                sh 'sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
+                sh 'sudo chmod +x /usr/local/bin/docker-compose'
+                sh 'docker-compose --version'
+            }
+        }
+        stage('Build and Push Docker Image') {
+            steps {
                 script {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_SERVER_IP} 'cd /var/www/html/PortfolioWebsite && docker-compose up -d'"
+                    // Generate the version number based on the Git commit hash
+                    def version = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+
+                    // Build the Docker image with the version number & imgae name
+                    sh "docker build -t ${IMAGE_NAME}:${version} ."
+
+                    // Tag the image as latest
+                    sh "docker tag ${IMAGE_NAME}:${version} ${IMAGE_NAME}:latest"
+
+                    // Authenticating and connecting with DockerHub
+                    withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Logging in to DockerHub
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+
+                        // Push the image to DockerHub
+                        sh "docker push ${IMAGE_NAME}:${version}"
+                        sh 'docker push ${IMAGE_NAME}:latest'
+                    }
                 }
             }
-        }
+            stage('Deploy to Test VM') {
+                steps {
+                    script {
+                        // Connect to the test VM using SSH
+                        sshagent(['SSH_project']) {
+                            sh 'ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@<test-vm-ip> "docker pull your-dockerhub-username/your-repository:${version}"'
+                        }
+                    }
+                }
+            }
+
+
+
+
         stage('Upload to Build VM') {
             steps {
                 script {
