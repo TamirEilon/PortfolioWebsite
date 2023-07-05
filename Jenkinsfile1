@@ -133,6 +133,14 @@ pipeline {
                 }
             }
         }
+        stage('Curl Docker Website') {
+            steps {
+                script {                    
+                    // Make the curl request
+                    sh "curl http://${PROD_VM_IP}"
+                }
+            }
+        }
     }
 }
         
