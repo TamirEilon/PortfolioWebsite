@@ -108,44 +108,5 @@ pipeline {
                 }
             }
         }
-        stage('Curl Docker Website - Test') {
-            steps {
-                script {                    
-                    // Make the curl request
-                    sh "curl http://${TEST_VM_IP}"
-                }
-            }
-        }
-        stage('Deploy to Prod Server') {
-            steps {
-                script {
-            def sshScript = '''
-                sh "docker rm --force \$(docker ps -aq)" 
-                sh "docker rmi --force \$(docker images -q)" // Deletes all images on the EC2 instance
-                sh "docker kill \$(docker ps -q) || true" // Kills all runing dockers on the EC2 instance, in order to use the 80 port again
-                sh "docker rm -f websitecontainer"
-                sh "docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
-                sh "docker run -d -p 80:80 --name websitecontainer $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}"
-            '''
-            
-                withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
-                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sshagent(['ssh_instrances']) {
-                                sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${PROD_VM_IP} "${sshScript}"'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        stage('Curl Docker Website - Prod') {
-            steps {
-                script {                    
-                    // Make the curl request
-                    sh "curl http://${PROD_VM_IP}"
-                }
-            }
-        }
     }
-}
 }
