@@ -82,9 +82,10 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                         sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rmi --force $(docker images -a -q)"' //clearing all images
                         sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rm --force $(docker ps -a -f status=exited -q)"' // clearing all containers
+                    }
                 }
             }
-        }        
+        }
         stage('Pulling image to Test Server') {
             steps {
                 script {
