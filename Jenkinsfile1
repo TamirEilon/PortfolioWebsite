@@ -49,8 +49,8 @@ pipeline {
                     // The next script is mendatory in each VM we want to preform a build.
                     // It clears the VM (much like a cleanup), in order for us to use the same
                     // elements and names (for containers and images)
-                    sh 'docker rmi --force $(docker images -a -q)' //clearing all images
                     sh 'docker rm --force $(docker ps -a -f status=exited -q)' // clearing all containers
+                    sh 'docker rmi --force $(docker images -a -q)' //clearing all images
                 }
             }
         }
