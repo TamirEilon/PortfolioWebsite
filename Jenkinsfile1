@@ -102,6 +102,7 @@ pipeline {
                             sshagent(['ssh_instrances']) {
                                 sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rmi --force $(docker images -a -q)"'
                                 sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rm --force $(docker ps -a -f status=exited -q)"'
+                                }
                             }
                         }
                     }
