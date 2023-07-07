@@ -43,22 +43,21 @@ pipeline {
                 sh 'sudo usermod -a -G docker jenkins'
             }
         }
-        stage('Build and Push Docker Image') { // Build the Docker image with the version number & image name
+        stage ('clearing the Build VM') {
             steps {
                 script {
                     // The next script is mendatory in each VM we want to preform a build.
                     // It clears the VM (much like a cleanup), in order for us to use the same
                     // elements and names (for containers and images)
-
-                    echo 'Clearing up the VM'
-                    sh "docker rm --force \$(docker ps -aq)" 
-                    sh "docker rmi --force \$(docker images -q)" // Deletes all images on the EC2 instance
-                    sh "docker kill \$(docker ps -q) || true" // Kills all runing dockers on the EC2 instance, in order to use the 80 port again
-                    sh "docker rm -f websitecontainer"
-                    sh "docker build -t ${IMAGE_NAME}:${VERSION} ."
-        
-                    // Tag the image as latest
-                    sh "docker tag ${IMAGE_NAME}:${VERSION} ${IMAGE_NAME}:latest"
+                    sh 'docker rmi --force $(docker images -a -q)' //clearing all images
+                    sh 'docker rm --force $(docker ps -a -f status=exited -q)' // clearing all containers
+                }
+            }
+        }
+        stage('Build and Push Docker Image') { 
+            steps {
+                script {
+                    sh "docker build -t ${IMAGE_NAME}:${VERSION} ." // build the image
         
                     // Authenticating and connecting with DockerHub
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
@@ -66,16 +65,27 @@ pipeline {
                         withEnv(['DOCKER_CLI_AIO=1']) {
                             sh """
                                 docker login -u \$DOCKER_USERNAME -p \$DOCKER_PASSWORD
-                                docker tag website \$DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}
-                                docker push \$DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}
-                                docker run -d -p 80:80 --name websitecontainer \$DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION}
+                                docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${VERSION} .
+                                docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:200${VERSION}
                             """
                         }
                     }
                 }
             }
         }
-        stage('Deploy to Test Server') {
+        stage ('clearing the Test VM') {
+            steps {
+                script {
+                    // The next script is mendatory in each VM we want to preform a build.
+                    // It clears the VM (much like a cleanup), in order for us to use the same
+                    // elements and names (for containers and images)
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                        sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rmi --force $(docker images -a -q)"' //clearing all images
+                        sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rm --force $(docker ps -a -f status=exited -q)"' // clearing all containers
+                }
+            }
+        }        
+        stage('Pulling image to Test Server') {
             steps {
                 script {
             def sshScript = '''
@@ -90,7 +100,8 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                         withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                             sshagent(['ssh_instrances']) {
-                                sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "${sshScript}"'
+                                sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rmi --force $(docker images -a -q)"'
+                                sh 'ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${TEST_INSTANCE_USER}@${TEST_VM_IP} "docker rm --force $(docker ps -a -f status=exited -q)"'
                             }
                         }
                     }
