@@ -90,8 +90,8 @@ pipeline {
                 script {
                     // Increment the image version by 0.1
                     def newVersion = (params.IMAGE_VERSION as Double) + 0.1
-                    // Convert the new version back to a string
-                    def newVersionString = newVersion.toString()
+                    // Convert the new version back to a string with one decimal place
+                    def newVersionString = String.format('%.1f', newVersion)
                     
                     // Build the image with the updated version
                     sh "docker build -t ${IMAGE_NAME}:${newVersionString} ."
