@@ -43,17 +43,35 @@ pipeline {
                 sh 'sudo usermod -a -G docker jenkins'
             }
         }
-        stage('stoping all containers on Build VM') {
+        stage('Stopping all containers on Build VM') {
             steps {
                 script {
-                    sh 'docker stop $(docker ps -a -q)'
+                    def runningContainers = sh(
+                        script: "docker ps --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (runningContainers) {
+                        sh 'docker stop $(docker ps -a -q)'
+                    } else {
+                        echo 'No running containers found.'
+                    }
                 }
             }
         }
-        stage('deleting all containers on Build VM') {
+        stage('Deleting all containers on Build VM') {
             steps {
                 script {
-                    sh 'docker rm $(docker ps -a -q)'
+                    def stoppedContainers = sh(
+                        script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (stoppedContainers) {
+                        sh 'docker rm $(docker ps -a -q)'
+                    } else {
+                        echo 'No stopped containers found.'
+                    }
                 }
             }
         }
