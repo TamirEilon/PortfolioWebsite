@@ -49,8 +49,8 @@ pipeline {
                     // The next script is mandatory in each VM we want to perform a build.
                     // It clears the VM (much like a cleanup), in order for us to use the same
                     // elements and names (for containers and images)
-                    sh 'docker image prune –a'
-                    sh 'docker container prune'
+                    sh 'docker image prune –f'
+                    sh 'docker container prune -f'
                 }
             }
         }
