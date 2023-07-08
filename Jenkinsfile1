@@ -88,16 +88,19 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Increment the image version by 0.1
-                    def newVersion = (params.IMAGE_VERSION as Double) + 0.1
-                    // Convert the new version back to a string with one decimal place
-                    def newVersionString = String.format('%.1f', newVersion)
-                    
-                    // Build the image with the updated version
-                    sh "docker build -t ${IMAGE_NAME}:${newVersionString} ."
-                    
-                    // Pass the new version to the next stages
-                    env.VERSION = newVersionString
+                    withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Increment the image version by 0.1
+                        def newVersion = (params.IMAGE_VERSION as Double) + 0.1
+                        // Convert the new version back to a string with one decimal place
+                        def newVersionString = String.format('%.1f', newVersion)
+                        
+                        // Build the image with the updated version
+                        sh 'docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} .'
+                        sh 'docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}
+
+                        // Pass the new version to the next stages
+                        env.VERSION = newVersionString
+                    }
                 }
             }
         }
