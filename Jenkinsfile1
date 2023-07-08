@@ -60,11 +60,11 @@ pipeline {
         stage('deleting all images on Build VM') {
             steps {
                 script {
-                    sh 'docker rmi $(docker images -q))'
+                    sh 'docker rmi $(docker images -q)'
                 }
             }
         }
-        stage('Build and Push Docker Image') { 
+        stage('Build Docker Image') { 
             steps {
                 script {
                     sh "docker build -t ${IMAGE_NAME}:${VERSION} ." // build the image
