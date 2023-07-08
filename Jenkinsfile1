@@ -81,7 +81,7 @@ pipeline {
         stage('deleting all images on Build VM') {
             steps {
                 script {
-                    sh 'docker rmi --force $(docker images -q)'
+                    sh 'docker image prune -a --force'
                 }
             }
         }
