@@ -114,7 +114,7 @@ pipeline {
                 }
             }
         }
-        stage('curling the website on Test VM') {
+        stage('curling the website on Build VM') {
             steps {
                 script {
                     sh "curl https://${BUILD_VM_IP}/80"
