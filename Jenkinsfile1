@@ -118,15 +118,10 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        def runningContainers = sh(
-                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-            
-                        if (runningContainers) {
-                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No running containers found.'
+                        sshagent(['SSH_KEY']) {
+                            sshScript remote: "${TEST_INSTANCE_USER}@${TEST_VM_IP}", label: '', script: """
+                                docker ps --format '{{.Names}}' | xargs -r docker stop
+                            """
                         }
                     }
                 }
