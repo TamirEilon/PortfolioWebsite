@@ -117,13 +117,13 @@ pipeline {
         }
         stage('Install Docker on Test VM') {
             steps {
-                sshagent(credentials : ['ssh_instrances']) {
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum update'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum install docker'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -aG docker $USER'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl enable docker'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl start docker'"
-                    sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'echo Done installing Docker'"
+                withCredentials([file(credentialsId: 'ssh_credentials', variable: 'SSH_KEY')]) {
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum update'"
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum install docker'"
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -aG docker ${TEST_INSTANCE_USER}'"
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl enable docker'"
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl start docker'"
+                    sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'echo Done installing Docker'"
                 }
             }
         }
