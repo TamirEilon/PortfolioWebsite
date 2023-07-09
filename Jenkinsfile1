@@ -117,8 +117,10 @@ pipeline {
         }
         stage('Install Docker on Test VM') {
             steps {
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_install.sh'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_install.sh'"
+                sshagent(credentials : ['ssh_instrances']) {
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_install.sh'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_install.sh'"
+                }
             }
         }
         stage('Install Docker Compose on Test VM') {
