@@ -117,7 +117,7 @@ pipeline {
         }
         stage('Install Docker on Test VM') {
             steps {
-                withCredentials([file(credentialsId: 'ssh_credentials', variable: 'SSH_KEY')]) {
+                withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
                     sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum update'"
                     sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo yum install docker'"
                     sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -aG docker ${TEST_INSTANCE_USER}'"
