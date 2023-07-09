@@ -117,19 +117,58 @@ pipeline {
         }
         stage('Install Docker on Test VM') {
             steps {
-                sh 'chmod +x docker_install.sh'
-                sh './docker_install.sh'
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_install.sh'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_install.sh'"
             }
         }
         stage('Install Docker Compose on Test VM') {
             steps {
-                sh 'chmod +x docker_compose_install.sh'
-                sh './docker_compose_install.sh'
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_compose_install.sh'"
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_compose_install.sh'"
             }
         }
         stage('granting Docker access to the Jenkins user') {
             steps {
-                sh 'sudo usermod -a -G docker jenkins'
+                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -a -G docker jenkins'"
+            }
+        }
+        stage('Stopping all containers on Test VM') {
+            steps {
+                script {
+                    def runningContainers = sh(
+                        script: "docker ps --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (runningContainers) {
+                        sh 'docker stop $(docker ps -a -q)'
+                    } else {
+                        echo 'No running containers found.'
+                    }
+                }
+            }
+        }
+        stage('Deleting all containers on Test VM') {
+            steps {
+                script {
+                    def stoppedContainers = sh(
+                        script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (stoppedContainers) {
+                        sh 'docker rm $(docker ps -a -q)'
+                    } else {
+                        echo 'No stopped containers found.'
+                    }
+                }
+            }
+        }
+        stage('deleting all images on Test VM') {
+            steps {
+                script {
+                    sh 'docker image prune -a --force'
+                }
             }
         }
     }
