@@ -118,8 +118,12 @@ pipeline {
         stage('Install Docker on Test VM') {
             steps {
                 sshagent(credentials : ['ssh_instrances']) {
-                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_install.sh'"
-                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_install.sh'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo curl -fsSL https://get.docker.com -o get-docker.sh'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo chmod +x get-docker.sh'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -aG docker $USER'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl enable docker'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo systemctl start docker'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'echo Done installing Docker'"
                 }
             }
         }
