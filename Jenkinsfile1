@@ -114,6 +114,13 @@ pipeline {
                 }
             }
         }
+        stage('curling the website on Test VM') {
+            steps {
+                script {
+                    sh "curl https://${BUILD_VM_IP}/80"
+                }
+            }
+        }
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
