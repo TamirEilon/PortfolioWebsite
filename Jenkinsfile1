@@ -124,9 +124,9 @@ pipeline {
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
-                    echo "started stage"
+                    echo "Started stage"
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop $(docker ps -q)'
+                        sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -q)'"
                     }
                 }
             }
