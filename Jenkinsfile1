@@ -94,7 +94,8 @@ pipeline {
                         def newVersionString = String.format('%.1f', newVersion)
                         
                         // Build the image with the updated version
-                        sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} ."
+                        // sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} ."
+                        sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString} ."
                         sh "docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}"
 
                         // Pass the new version to the next stages
@@ -109,7 +110,53 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
+                        // sh "docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
                         sh "docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
+                    }
+                }
+            }
+        }
+        stage('Stopping all containers on Test VM') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                        def runningContainers = sh(
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deleting all containers on Test VM') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                        def stoppedContainers = sh(
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+        
+                        if (stoppedContainers) {
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No stopped containers found.'
+                        }
+                    }
+                }
+            }
+        }
+        stage('deleting all images on Test VM') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
                     }
                 }
             }
@@ -118,7 +165,8 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull ${IMAGE_NAME}:${env.VERSION}'"
+                        // sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull ${IMAGE_NAME}:${env.VERSION}'"
+                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                     }
                 }
             }
