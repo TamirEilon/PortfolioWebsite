@@ -41,7 +41,7 @@ pipeline {
                 sh './docker_compose_install.sh'
             }
         }
-        stage('granting Docker access to the Jenkins user') {
+        stage('granting Docker access to the Jenkins user on Build VM') {
             steps {
                 sh 'sudo usermod -a -G docker jenkins'
             }
@@ -127,7 +127,7 @@ pipeline {
                 sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_compose_install.sh'"
             }
         }
-        stage('granting Docker access to the Jenkins user') {
+        stage('granting Docker access to the Jenkins user on Test VM') {
             steps {
                 sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'sudo usermod -a -G docker jenkins'"
             }
@@ -135,15 +135,15 @@ pipeline {
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
-                    def runningContainers = sh(
-                        script: "docker ps --format '{{.Names}}'",
-                        returnStdout: true
-                    ).trim()
-        
-                    if (runningContainers) {
-                        sh 'docker stop $(docker ps -a -q)'
-                    } else {
-                        echo 'No running containers found.'
+                    sshagent(['ssh_credentials']) {
+                        sshCommand remote: '${TEST_INSTANCE_USER}@${TEST_VM_IP}', command: '''
+                            runningContainers=$(docker ps --format '{{.Names}}')
+                            if [[ -n "$runningContainers" ]]; then
+                                docker stop $(docker ps -a -q)
+                            else
+                                echo "No running containers found."
+                            fi
+                        '''
                     }
                 }
             }
