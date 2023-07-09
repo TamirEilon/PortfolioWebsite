@@ -95,8 +95,8 @@ pipeline {
                         def newVersionString = String.format('%.1f', newVersion)
                         
                         // Build the image with the updated version
-                        sh 'docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} .'
-                        sh 'docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}'
+                        sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} ."
+                        sh "docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}"
 
                         // Pass the new version to the next stages
                         env.VERSION = newVersionString
