@@ -123,8 +123,10 @@ pipeline {
         }
         stage('Install Docker Compose on Test VM') {
             steps {
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_compose_install.sh'"
-                sh "ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_compose_install.sh'"
+                sshagent(credentials : ['ssh_instrances']) {
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'chmod +x docker_compose_install.sh'"
+                    sh "ssh -i -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} './docker_compose_install.sh'"
+                }
             }
         }
         stage('granting Docker access to the Jenkins user on Test VM') {
