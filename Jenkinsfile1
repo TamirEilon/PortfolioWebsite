@@ -114,7 +114,7 @@ pipeline {
                 }
             }
         }
-        stage('Stopping all containers on Build VM') {
+        stage('Stopping all containers on Test VM') {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
