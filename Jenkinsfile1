@@ -114,6 +114,13 @@ pipeline {
                 }
             }
         }
+        stage('test') {
+            steps {
+                script {
+                    echo "works"
+                }
+            }
+        }
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
