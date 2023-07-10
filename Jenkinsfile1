@@ -193,5 +193,84 @@ pipeline {
                 }
             }
         }
+        stage('Stopping all containers on Test VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        def runningContainers = sh(
+                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Deleting all containers on Prod VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        def stoppedContainers = sh(
+                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (stoppedContainers) {
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No stopped containers found.'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Deleting all images on Prod VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker image prune -a --force'"
+                    }
+                }
+            }
+        }
+        
+        stage('Pulling the image from Docker Hub to Prod VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Running the image on Prod VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Curling the website on Test VM') {
+            steps {
+                script {
+                    sh "curl http://${PROD_VM_IP}:80"
+                }
+            }
+        }
     }
 }
