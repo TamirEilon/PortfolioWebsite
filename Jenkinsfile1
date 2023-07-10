@@ -118,7 +118,34 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -q | xargs -r docker stop'"
+                        def runningContainers = sh(
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deleting all containers on Test VM') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                        def stoppedContainers = sh(
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+        
+                        if (stoppedContainers) {
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No stopped containers found.'
+                        }
                     }
                 }
             }
@@ -127,7 +154,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
+                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
                     }
                 }
             }
