@@ -195,12 +195,12 @@ pipeline {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         def runningContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
             
                         if (runningContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker stop \$(docker ps -a -q)'"
                         } else {
                             echo 'No running containers found.'
                         }
