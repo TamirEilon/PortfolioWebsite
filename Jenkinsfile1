@@ -18,13 +18,13 @@ pipeline {
             steps {
                 script {
                     // Start the Build VM
-                    sh "aws ec2 start-instances --instance-ids ${BUILD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 start-instances --instance-ids i-087bf23af1a6e1ef5 --region ${AWS_REGION}"
 
                     // Start the Test VM
-                    sh "aws ec2 start-instances --instance-ids ${TEST_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 start-instances --instance-ids i-0cd92fc368a5994a1 --region ${AWS_REGION}"
 
                     // Start the Prod VM
-                    sh "aws ec2 start-instances --instance-ids ${PROD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 start-instances --instance-ids i-0f7b247ad6431349d --region ${AWS_REGION}"
 
                     // Wait for the VMs to start
                     sh "aws ec2 wait instance-running --instance-ids ${BUILD_VM_INSTANCE_ID} --region ${AWS_REGION}"
@@ -33,6 +33,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Cleanup - cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
