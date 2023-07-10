@@ -166,7 +166,9 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        }
                     }
                 }
             }
