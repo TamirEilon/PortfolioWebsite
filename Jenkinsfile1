@@ -1,8 +1,8 @@
 pipeline {
     agent any
     environment {
-        BUILD_VM_IP = "34.229.159.169"
-        TEST_VM_IP = "18.212.243.176"
+        BUILD_VM_IP = "3.92.58.219"
+        TEST_VM_IP = "3.95.241.200"
         PROD_VM_IP = "34.238.49.157"
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
@@ -124,9 +124,17 @@ pipeline {
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
-                    echo "Started stage"
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -q)'"
+                        def runningContainers = sh(
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
                     }
                 }
             }
