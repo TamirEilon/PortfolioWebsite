@@ -117,14 +117,14 @@ pipeline {
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         def runningContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
             
                         if (runningContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
                         } else {
                             echo 'No running containers found.'
                         }
@@ -132,17 +132,18 @@ pipeline {
                 }
             }
         }
+        
         stage('Deleting all containers on Test VM') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         def stoppedContainers = sh(
-                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
-        
+            
                         if (stoppedContainers) {
-                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
                         } else {
                             echo 'No stopped containers found.'
                         }
@@ -150,34 +151,38 @@ pipeline {
                 }
             }
         }
-        stage('deleting all images on Test VM') {
+        
+        stage('Deleting all images on Test VM') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker image prune -a --force'"
                     }
                 }
             }
         }
-        stage('pulling the image from dockerhub to Test VM') {
+        
+        stage('Pulling the image from Docker Hub to Test VM') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull ${IMAGE_NAME}:${env.VERSION}'"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                     }
                 }
             }
         }
-        stage('running the image on Test VM') {
+        
+        stage('Running the image on Test VM') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker run -d -p 8080:80 ${IMAGE_NAME}:${env.VERSION}'"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker run -d -p 8080:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                     }
                 }
             }
         }
-        stage('curling the website on Test VM') {
+        
+        stage('Curling the website on Test VM') {
             steps {
                 script {
                     sh "curl http://${TEST_VM_IP}:80"
