@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         BUILD_VM_IP = "34.229.159.169"
-        TEST_VM_IP = "18.212.243.176"
+        TEST_VM_IP = "3.95.241.200"
         PROD_VM_IP = "34.238.49.157"
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
