@@ -3,7 +3,7 @@ pipeline {
     environment {
         BUILD_VM_IP = "34.229.159.169"
         TEST_VM_IP = "3.95.241.200"
-        PROD_VM_IP = "34.238.49.157"
+        PROD_VM_IP = "34.205.142.197"
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
         TEST_INSTANCE_USER = "ec2-user"
