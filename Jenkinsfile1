@@ -14,6 +14,25 @@ pipeline {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
     }
     stages {
+        stage('Start VMs') {
+            steps {
+                script {
+                    // Start the Build VM
+                    sh "aws ec2 start-instances --instance-ids ${BUILD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+
+                    // Start the Test VM
+                    sh "aws ec2 start-instances --instance-ids ${TEST_VM_INSTANCE_ID} --region ${AWS_REGION}"
+
+                    // Start the Prod VM
+                    sh "aws ec2 start-instances --instance-ids ${PROD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+
+                    // Wait for the VMs to start
+                    sh "aws ec2 wait instance-running --instance-ids ${BUILD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 wait instance-running --instance-ids ${TEST_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 wait instance-running --instance-ids ${PROD_VM_INSTANCE_ID} --region ${AWS_REGION}"
+                }
+            }
+        }
         stage('Cleanup - cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
