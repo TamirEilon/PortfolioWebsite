@@ -114,37 +114,12 @@ pipeline {
                 }
             }
         }
-        stage('test') {
-            steps {
-                script {
-                    echo "works"
-                }
-            }
-        }
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
                     echo "Started stage"
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -q)'"
-                    }
-                }
-            }
-        }
-        stage('Deleting all containers on Test VM') {
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        def stoppedContainers = sh(
-                            script: "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-        
-                        if (stoppedContainers) {
-                            sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No stopped containers found.'
-                        }
+                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'if [ -n "$(docker ps -q)" ]; then docker stop $(docker ps -aq) && docker rm $(docker ps -aq); fi'"
                     }
                 }
             }
