@@ -117,15 +117,14 @@ pipeline {
         stage('Stopping all containers on Test VM') {
             steps {
                 script {
-                    echo "started stage"
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
                         def runningContainers = sh(
-                        script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
-                        returnStdout: true
-                    ).trim()
-
+                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
                         if (runningContainers) {
-                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \\$(docker ps -a -q)'"
+                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
                         } else {
                             echo 'No running containers found.'
                         }
