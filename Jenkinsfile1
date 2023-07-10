@@ -193,7 +193,7 @@ pipeline {
                 }
             }
         }
-        stage('Stopping all containers on Test VM') {
+        stage('Stopping all containers on Prod VM') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
@@ -265,7 +265,7 @@ pipeline {
             }
         }
         
-        stage('Curling the website on Test VM') {
+        stage('Curling the website on Prod VM') {
             steps {
                 script {
                     sh "curl http://${PROD_VM_IP}:80"
