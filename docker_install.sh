@@ -1,13 +1,11 @@
 #!/bin/bash
 
-sudo curl -fsSL https://get.docker.com -o get-docker.sh
+sudo yum update -y
 
-sudo chmod +x get-docker.sh
+sudo yum install -y docker
 
-sudo usermod -aG docker $USER
+sudo service docker start
 
 sudo systemctl enable docker
 
-sudo systemctl start docker
-
-echo Done installing Docker
+sudo usermod -a -G docker ec2-user
