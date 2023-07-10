@@ -106,7 +106,7 @@ pipeline {
         stage('Curling the Build VM website') {
             steps {
                 script {
-                    curl http://${BUILD_VM_IP}:80
+                    sh "curl http://${BUILD_VM_IP}:80"
                 }
             }
         }
