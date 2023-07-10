@@ -179,7 +179,7 @@ pipeline {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker run -d -p 8080:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                         }
                     }
                 }
