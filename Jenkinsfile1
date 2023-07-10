@@ -119,7 +119,7 @@ pipeline {
                 script {
                     echo "Started stage"
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -q)'"
+                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker stop \$(docker ps -q)'"
                     }
                 }
             }
@@ -129,12 +129,12 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
                         def stoppedContainers = sh(
-                            script: "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            script: "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
         
                         if (stoppedContainers) {
-                            sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                            sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
                         } else {
                             echo 'No stopped containers found.'
                         }
@@ -146,7 +146,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
+                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker image prune -a --force'"
                     }
                 }
             }
@@ -155,7 +155,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull ${IMAGE_NAME}:${env.VERSION}'"
+                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker pull ${IMAGE_NAME}:${env.VERSION}'"
                     }
                 }
             }
@@ -164,7 +164,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'ssh_instrances', variable: 'SSH_KEY')]) {
-                        sh "ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker run -d -p 8080:80 ${IMAGE_NAME}:${env.VERSION}'"
+                        sh "ssh -o StrictHostKeyChecking=no ${TEST_INSTANCE_USER}@${TEST_VM_IP} 'docker run -d -p 8080:80 ${IMAGE_NAME}:${env.VERSION}'"
                     }
                 }
             }
