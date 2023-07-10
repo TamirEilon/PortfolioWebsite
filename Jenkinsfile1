@@ -1,9 +1,6 @@
 pipeline {
     agent any
     environment {
-        BUILD_VM_IP = "34.229.159.169"
-        TEST_VM_IP = "3.95.241.200"
-        PROD_VM_IP = "34.205.142.197"
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
         TEST_INSTANCE_USER = "ec2-user"
@@ -39,7 +36,7 @@ pipeline {
                 script {
                     echo "Fetching EC2 instance IP address"
                     // Run AWS CLI command to fetch the IP address of the EC2 instance
-                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-087bf23af1a6e1ef5 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    TEST_VM_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-087bf23af1a6e1ef5 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
                     echo "EC2 instance IP: ${BUILD_VM_IP}"
                 }
             }
@@ -50,7 +47,7 @@ pipeline {
                 script {
                     echo "Fetching EC2 instance IP address"
                     // Run AWS CLI command to fetch the IP address of the EC2 instance
-                    TEST_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    TEST_VM_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0cd92fc368a5994a1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
                     echo "EC2 instance IP: ${TEST_VM_IP}"
                 }
             }
@@ -61,7 +58,7 @@ pipeline {
                 script {
                     echo "Fetching EC2 instance IP address"
                     // Run AWS CLI command to fetch the IP address of the EC2 instance
-                    PROD_SERVER_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0f7b247ad6431349d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
+                    PROD_VM_IP = sh(script: "/usr/local/bin/aws ec2 describe-instances --instance-id i-0f7b247ad6431349d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text --region ${AWS_REGION}", returnStdout: true).trim()
                     echo "EC2 instance IP: ${PROD_VM_IP}"
                 }
             }
