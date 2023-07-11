@@ -14,6 +14,19 @@ pipeline {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
     }
     stages {
+        stage('Deploy to Test VM') {
+            steps {
+                script {
+                    // Retrieve Docker Hub credentials
+                    withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Set the environment variables
+                        env.DOCKER_USERNAME = DOCKER_USERNAME
+                        env.DOCKER_PASSWORD = DOCKER_PASSWORD
+                    }
+                }
+            }
+        }
+
         stage('Cleanup - cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
