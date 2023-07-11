@@ -162,7 +162,7 @@ pipeline {
             steps {
                 script {
                     // SSH into the test VM
-                    sshagent(['ssh_instrances']) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker-compose down'"
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker-compose up -d'"
@@ -231,7 +231,7 @@ pipeline {
             steps {
                 script {
                     // SSH into the prod VM
-                    sshagent(['ssh_instrances']) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker-compose down'"
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                         sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker-compose up -d'"
