@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment {
-        BUILD_VM_IP = "34.229.159.169"
-        TEST_VM_IP = "3.95.241.200"
-        PROD_VM_IP = "34.205.142.197"
+        BUILD_VM_IP = "54.89.202.88"
+        TEST_VM_IP = "54.173.36.210"
+        PROD_VM_IP = "44.203.113.108"
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
         TEST_INSTANCE_USER = "ec2-user"
@@ -98,7 +98,7 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Docker Hub') {
+        stage('Push Docker Image to Docker Hub & run docker-compose') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
@@ -170,7 +170,7 @@ pipeline {
             }
         }
         
-        stage('Running the image on Test VM') {
+        stage('Running the image on Test VM as docker-compsoe') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
@@ -250,7 +250,7 @@ pipeline {
             }
         }
         
-        stage('Running the image on Prod VM') {
+        stage('Running the image on Prod VM on docker compose') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
