@@ -14,7 +14,7 @@ pipeline {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
     }
     stages {
-        stage('Deploy to Test VM') {
+        stage('declaring variables') {
             steps {
                 script {
                     // Retrieve Docker Hub credentials
