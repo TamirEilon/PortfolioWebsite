@@ -158,25 +158,14 @@ pipeline {
             }
         }
         
-        stage('Pulling the image from Docker Hub to Test VM') {
+        stage('Deploy to Test VM') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Running the image on Test VM as docker-compose') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker-compose up -d'"
-                        }
+                    // SSH into the test VM
+                    sshagent(['ssh_instrances']) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker-compose down'"
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker-compose up -d'"
                     }
                 }
             }
@@ -185,7 +174,7 @@ pipeline {
         stage('Curling the website on Test VM') {
             steps {
                 script {
-                    sh "curl http://${TEST_VM_IP}:80"
+                    sh "curl http://${TEST_VM_IP}:8083"
                 }
             }
         }
@@ -238,25 +227,14 @@ pipeline {
             }
         }
         
-        stage('Pulling the image from Docker Hub to Prod VM') {
+        stage('Deploy to Prod VM') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Running the image on Prod VM on docker compose') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker-compose up -d'"
-                        }
+                    // SSH into the prod VM
+                    sshagent(['ssh_instrances']) {
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker-compose down'"
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker-compose up -d'"
                     }
                 }
             }
@@ -265,7 +243,7 @@ pipeline {
         stage('Curling the website on Prod VM') {
             steps {
                 script {
-                    sh "curl http://${PROD_VM_IP}:80"
+                    sh "curl http://${PROD_VM_IP}:8083"
                 }
             }
         }
