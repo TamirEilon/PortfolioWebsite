@@ -1,6 +1,6 @@
 version: '3'
 services:
   website:
-    image: ${DOCKER_USERNAME}/${DOCKERHUB_REPONAME}:${VERSION}
+    image: ${env.DOCKER_USERNAME}/${env.DOCKERHUB_REPONAME}:${env.VERSION}
     ports:
       - "8083:80"
