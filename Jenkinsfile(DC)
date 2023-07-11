@@ -170,7 +170,7 @@ pipeline {
             }
         }
         
-        stage('Running the image on Test VM as docker-compsoe') {
+        stage('Running the image on Test VM as docker-compose') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
