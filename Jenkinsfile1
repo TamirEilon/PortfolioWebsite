@@ -36,52 +36,41 @@ pipeline {
             }
         }
 
-        stage('Stopping all containers on Build VM') {
-            steps {
-                script {
-                    def runningContainers = sh(
-                        script: "docker ps --format '{{.Names}}'",
-                        returnStdout: true
-                    ).trim()
-        
-                    if (runningContainers) {
-                        sh 'docker stop $(docker ps -a -q)'
-                    } else {
-                        echo 'No running containers found.'
-                    }
-                }
-            }
-        }
-
-        stage('Deleting all containers on Build VM') {
-            steps {
-                script {
-                    def stoppedContainers = sh(
-                        script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
-                        returnStdout: true
-                    ).trim()
-        
-                    if (stoppedContainers) {
-                        sh 'docker rm $(docker ps -a -q)'
-                    } else {
-                        echo 'No stopped containers found.'
-                    }
-                }
-            }
-        }
-
-        stage('deleting all images on Build VM') {
-            steps {
-                script {
-                    sh 'docker image prune -a --force'
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+
+                        // Granting Docker access to the Jenkins user on Build VM
+                        sh 'sudo usermod -a -G docker jenkins'
+
+                        // Stopping all containers on Build VM
+                        def runningContainers = sh(
+                            script: "docker ps --format '{{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh 'docker stop $(docker ps -a -q)'
+                        } else {
+                            echo 'No running containers found.'
+                        }
+
+                        // Deleting all containers on Build VM
+                        def stoppedContainers = sh(
+                            script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (stoppedContainers) {
+                            sh 'docker rm $(docker ps -a -q)'
+                        } else {
+                            echo 'No stopped containers found.'
+                        }
+
+                        // Deleting all images on Build VM
+                        sh 'docker image prune -a --force'
+
                         // Increment the image version by 0.1
                         def newVersion = (params.IMAGE_VERSION as Double) + 0.1
                         // Convert the new version back to a string with one decimal place
@@ -109,60 +98,39 @@ pipeline {
                 }
             }
         }
-
-        stage('Stopping all containers on Test VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        def runningContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-            
-                        if (runningContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No running containers found.'
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Deleting all containers on Test VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        def stoppedContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-            
-                        if (stoppedContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No stopped containers found.'
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Deleting all images on Test VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker image prune -a --force'"
-                    }
-                }
-            }
-        }
         
         stage('Pulling the image from Docker Hub to Test VM') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            // Stopping all containers on Test VM
+                            def runningContainers = sh(
+                                script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                                returnStdout: true
+                            ).trim()
+                
+                            if (runningContainers) {
+                                sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                            } else {
+                                echo 'No running containers found.'
+                            }
+
+                            // Deleting all containers on Test VM
+                            def stoppedContainers = sh(
+                                script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                                returnStdout: true
+                            ).trim()
+                
+                            if (stoppedContainers) {
+                                sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                            } else {
+                                echo 'No stopped containers found.'
+                            }
+
+                            // Deleting all images on Test VM
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker image prune -a --force'"
+
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                         }
                     }
@@ -189,60 +157,39 @@ pipeline {
                 }
             }
         }
-
-        stage('Stopping all containers on Prod VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        def runningContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-            
-                        if (runningContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker stop \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No running containers found.'
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Deleting all containers on Prod VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        def stoppedContainers = sh(
-                            script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
-                            returnStdout: true
-                        ).trim()
-            
-                        if (stoppedContainers) {
-                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker rm \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No stopped containers found.'
-                        }
-                    }
-                }
-            }
-        }
-        
-        stage('Deleting all images on Prod VM') {
-            steps {
-                script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
-                        sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker image prune -a --force'"
-                    }
-                }
-            }
-        }
         
         stage('Pulling the image from Docker Hub to Prod VM') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
                         withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            // Stopping all containers on Test VM
+                            def runningContainers = sh(
+                                script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
+                                returnStdout: true
+                            ).trim()
+                
+                            if (runningContainers) {
+                                sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
+                            } else {
+                                echo 'No running containers found.'
+                            }
+
+                            // Deleting all containers on Test VM
+                            def stoppedContainers = sh(
+                                script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                                returnStdout: true
+                            ).trim()
+                
+                            if (stoppedContainers) {
+                                sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
+                            } else {
+                                echo 'No stopped containers found.'
+                            }
+
+                            // Deleting all images on Test VM
+                            sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker image prune -a --force'"
+
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
                         }
                     }
