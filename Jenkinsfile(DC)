@@ -56,7 +56,7 @@ pipeline {
                         script: "docker ps --format '{{.Names}}'",
                         returnStdout: true
                     ).trim()
-        
+
                     if (runningContainers) {
                         sh 'docker stop $(docker ps -a -q)'
                     } else {
@@ -73,7 +73,7 @@ pipeline {
                         script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
                         returnStdout: true
                     ).trim()
-        
+
                     if (stoppedContainers) {
                         sh 'docker rm $(docker ps -a -q)'
                     } else {
@@ -83,7 +83,7 @@ pipeline {
             }
         }
 
-        stage('deleting all images on Build VM') {
+        stage('Deleting all images on Build VM') {
             steps {
                 script {
                     sh 'docker image prune -a --force'
@@ -99,10 +99,15 @@ pipeline {
                         def newVersion = (params.IMAGE_VERSION as Double) + 0.1
                         // Convert the new version back to a string with one decimal place
                         def newVersionString = String.format('%.1f', newVersion)
-                        
-                        // Build the image with the updated version
-                        sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} ."
-                        sh "docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}"
+
+                        // Build the image with the updated version using multi-stage Docker build
+                        sh """
+                        docker build \
+                            --build-arg IMAGE_NAME=${IMAGE_NAME} \
+                            --build-arg VERSION=${newVersionString} \
+                            --target final \
+                            -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString} .
+                        """
 
                         // Pass the new version to the next stages
                         env.VERSION = newVersionString
@@ -111,14 +116,21 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Docker Hub & run docker-compose') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
-                        sh "docker-compose up -d"
                     }
+                }
+            }
+        }
+
+        stage('Deploy using Docker Compose') {
+            steps {
+                script {
+                    sh "docker-compose up -d"
                 }
             }
         }
@@ -131,7 +143,7 @@ pipeline {
                             script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
-            
+
                         if (runningContainers) {
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker stop \$(docker ps -a -q)'"
                         } else {
@@ -141,7 +153,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deleting all containers on Test VM') {
             steps {
                 script {
@@ -150,7 +162,7 @@ pipeline {
                             script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
-            
+
                         if (stoppedContainers) {
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${TEST_VM_IP} 'docker rm \$(docker ps -a -q)'"
                         } else {
@@ -160,7 +172,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deleting all images on Test VM') {
             steps {
                 script {
@@ -170,7 +182,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to Test VM') {
             steps {
                 script {
@@ -185,7 +197,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Curling the website on Test VM') {
             steps {
                 script {
@@ -202,7 +214,7 @@ pipeline {
                             script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
-            
+
                         if (runningContainers) {
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker stop \$(docker ps -a -q)'"
                         } else {
@@ -212,7 +224,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deleting all containers on Prod VM') {
             steps {
                 script {
@@ -221,7 +233,7 @@ pipeline {
                             script: "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
                             returnStdout: true
                         ).trim()
-            
+
                         if (stoppedContainers) {
                             sh "sudo ssh -i \"$SSH_KEY\" -o StrictHostKeyChecking=no ${SSH_USERNAME}@${PROD_VM_IP} 'docker rm \$(docker ps -a -q)'"
                         } else {
@@ -231,7 +243,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deleting all images on Prod VM') {
             steps {
                 script {
@@ -241,7 +253,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to Prod VM') {
             steps {
                 script {
@@ -256,7 +268,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Curling the website on Prod VM') {
             steps {
                 script {
