@@ -14,6 +14,33 @@ pipeline {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
     }
     stages {
+        stage('IP fetch') {
+            steps {
+                script {
+                    // Fetch Build VM IP
+                    env.BUILD_VM_IP = sh(
+                        script: 'aws ec2 describe-instances --filters "Name=tag:Name,Values=build-vm" --region $AWS_REGION --query "Reservations[0].Instances[0].PublicIpAddress" --output text',
+                        returnStdout: true
+                    ).trim()
+        
+                    // Fetch Test VM IP
+                    env.TEST_VM_IP = sh(
+                        script: 'aws ec2 describe-instances --filters "Name=tag:Name,Values=test-vm" --region $AWS_REGION --query "Reservations[0].Instances[0].PublicIpAddress" --output text',
+                        returnStdout: true
+                    ).trim()
+        
+                    // Fetch Prod VM IP
+                    env.PROD_VM_IP = sh(
+                        script: 'aws ec2 describe-instances --filters "Name=tag:Name,Values=prod-vm" --region $AWS_REGION --query "Reservations[0].Instances[0].PublicIpAddress" --output text',
+                        returnStdout: true
+                    ).trim()
+        
+                    echo "Build VM IP: ${env.BUILD_VM_IP}"
+                    echo "Test VM IP: ${env.TEST_VM_IP}"
+                    echo "Prod VM IP: ${env.PROD_VM_IP}"
+                }
+            }
+        }
         stage('Cleanup - cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
