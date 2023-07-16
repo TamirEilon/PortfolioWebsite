@@ -14,7 +14,7 @@ pipeline {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
     }
     stages {
-        stage('Cleanup - cleaning the workspace') {
+        stage('Cleaning the workspace') {
             steps {
                 echo "Cleaning up the workspace on the Jenkins VM"
                 deleteDir()
@@ -27,12 +27,6 @@ pipeline {
                 echo "Cloning the repository from GitHub"
                 git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
                 echo "Cloning from GitHub finished"
-            }
-        }
-
-        stage('granting Docker access to the Jenkins user on Build VM') {
-            steps {
-                sh 'sudo usermod -a -G docker jenkins'
             }
         }
 
@@ -86,7 +80,7 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Docker Hub') {
+        stage('Push Image to DockerHub') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
@@ -130,7 +124,7 @@ pipeline {
             }
         }
         
-        stage('Pulling the image from Docker Hub to Test VM') {
+        stage('Pulling image to Test VM') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
@@ -154,7 +148,7 @@ pipeline {
             }
         }
         
-        stage('Curling the website on Test VM') {
+        stage('Curling Test website') {
             steps {
                 script {
                     sh "curl http://${TEST_VM_IP}:80"
@@ -194,7 +188,7 @@ pipeline {
             }
         }
         
-        stage('Pulling the image from Docker Hub to Prod VM') {
+        stage('Pulling image to Prod VM') {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh_instrances', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USERNAME')]) {
@@ -218,7 +212,7 @@ pipeline {
             }
         }
         
-        stage('Curling the website on Prod VM') {
+        stage('Curling Prod website') {
             steps {
                 script {
                     sh "curl http://${PROD_VM_IP}:80"
