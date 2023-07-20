@@ -219,19 +219,5 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to GKE') {
-            steps {
-                // Configure Kubernetes context
-                sh 'gcloud container clusters get-credentials fancy-cluster --zone us-central1-f --project myfinalproject-393106'
-        
-                // Apply deployment and service configurations
-                sh 'kubectl apply -f deployment.yml'
-                sh 'kubectl apply -f service.yml'
-        
-                // Verify deployment and service
-                sh 'kubectl get deployments'
-                sh 'kubectl get services'
-            }
-        }
     }
 }
