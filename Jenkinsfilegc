@@ -95,7 +95,7 @@ pipeline {
                 }
             }
         }
-        stage('SSH into TEST VM') {
+        stage('Clearing the TEST VM') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
                     script {
