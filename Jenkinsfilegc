@@ -99,7 +99,31 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
                     script {
-                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'YOUR_SSH_COMMANDS'"
+                        // sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'YOUR_SSH_COMMANDS'"
+
+                        def runningContainers = sh(
+                            script: "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker ps --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (runningContainers) {
+                            sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker stop \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
+
+                        def stoppedContainers = sh(
+                            script: "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker ps -a --filter \"status=exited\" --format {{.Names}}'",
+                            returnStdout: true
+                        ).trim()
+            
+                        if (stoppedContainers) {
+                            sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker rm \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No stopped containers found.'
+                        }
+
+                        sh "sudo ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker image prune -a --force'"
                     }
                 }
             }
