@@ -3,7 +3,7 @@ pipeline {
     environment {
         // Server's IPs
         BUILD_VM_IP = "54.160.210.172"
-        TEST_VM_IP = "34.207.115.68"
+        TEST_VM_IP = "34.165.106.99"
         PROD_VM_IP = "52.91.62.16"
 
         // Variables for GCE
@@ -104,7 +104,7 @@ pipeline {
                 script {
                     // SSH into the GCP VM and execute the command
                     sshagent(['GcpSshCredentials']) {
-                        sh "ssh -o StrictHostKeyChecking=no -i ${sshCredentials} ${GCE_VM_INSTANCE_NAME}@${BUILD_VM_IP}"                  }
+                        sh "ssh -o StrictHostKeyChecking=no -i ${sshCredentials} ${GCE_VM_INSTANCE_NAME}@${TEST_VM_IP}"                  }
                 }
             }
         }
