@@ -2,9 +2,8 @@ pipeline {
     agent any
     environment {
         // Server's IPs
-        BUILD_VM_IP = "54.160.210.172"
         TEST_VM_IP = "34.165.106.99"
-        PROD_VM_IP = "52.91.62.16"
+        PROD_VM_IP = "34.165.30.93"
 
         // Variables for GCE
         GCE_PROJECT_ID = 'MyFinalProject'
