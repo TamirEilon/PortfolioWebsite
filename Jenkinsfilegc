@@ -162,7 +162,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentialsProd', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
                     script {
-                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${PROD_VM_IP}\" 'echo "yes"'"
+                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${PROD_VM_IP}\" "
                     }
                 }
             }
