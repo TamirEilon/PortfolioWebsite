@@ -127,6 +127,37 @@ pipeline {
                     }
                 }
             }
+        }    
+        stage('Pulling image to Test VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'DockerHubCredentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker pull $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Running the image on Test VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'DockerHubCredentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}'"
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Curling Test website') {
+            steps {
+                script {
+                    sh "curl http://${TEST_VM_IP}:80"
+                }
+            }
         }
     }
 }
