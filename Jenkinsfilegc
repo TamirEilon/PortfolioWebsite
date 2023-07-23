@@ -102,9 +102,9 @@ pipeline {
             agent any
             steps {
                 script {
-                    // SSH into the GCP VM and execute the command
                     sshagent(['GcpSshCredentials']) {
-                        sh "ssh -o StrictHostKeyChecking=no -i ${sshCredentials} ${GCE_VM_INSTANCE_NAME}@${TEST_VM_IP}"                  }
+                        sh "ssh -o StrictHostKeyChecking=no -i ${sshCredentials} ${GCE_VM_INSTANCE_NAME}@${TEST_VM_IP}"
+                    }
                 }
             }
         }
