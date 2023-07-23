@@ -158,12 +158,19 @@ pipeline {
                 }
             }
         }
+        stage('prod ssh check') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentialsProd', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
+                    script {
+                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${PROD_VM_IP}\" 'echo "yes"'"
+                    }
+                }
+            }
+        }
         stage('Clearing the PROD VM') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentialsProd', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
                     script {
-                        // sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${PROD_VM_IP}\" 'YOUR_SSH_COMMANDS'"
-
                         def runningContainers = sh(
                             script: "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${PROD_VM_IP}\" 'docker ps --format {{.Names}}'",
                             returnStdout: true
