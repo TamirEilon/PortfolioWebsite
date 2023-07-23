@@ -95,5 +95,14 @@ pipeline {
                 }
             }
         }
+        stage('SSH into GCP VM') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', usernameVariable: 'SSH_USERNAME', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                        sh "ssh -i $SSH_PRIVATE_KEY $SSH_USERNAME@${env.TEST_VM_IP} 'YOUR_SSH_COMMANDS'"
+                    }
+                }
+            }
+        }
     }
 }
