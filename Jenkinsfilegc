@@ -1,1 +1,96 @@
 
+pipeline {
+    agent any
+    environment {
+        BUILD_VM_IP = "54.160.210.172"
+        TEST_VM_IP = "34.207.115.68"
+        PROD_VM_IP = "52.91.62.16"
+        DOCKERHUB_REPONAME = "new_website"
+        IMAGE_NAME = "website"
+        TEST_INSTANCE_USER = "ec2-user"
+        KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
+        AWS_REGION = "us-east-1"
+    }
+    parameters {
+        string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
+    }
+    stages {
+        stage('Cleaning the workspace') {
+            steps {
+                echo "Cleaning up the workspace on the Jenkins VM"
+                deleteDir()
+                echo "Cleaning up finished"
+            }
+        }
+
+        stage('Clone Repository') {
+            steps {
+                echo "Cloning the repository from GitHub"
+                git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
+                echo "Cloning from GitHub finished"
+            }
+        }
+
+        stage('Cleaning the build VM') {
+            steps {
+                script {
+                    def runningContainers = sh(
+                        script: "docker ps --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (runningContainers) {
+                        sh 'docker stop $(docker ps -a -q)'
+                    } else {
+                        echo 'No running containers found.'
+                    }
+
+                    def stoppedContainers = sh(
+                        script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (stoppedContainers) {
+                        sh 'docker rm $(docker ps -a -q)'
+                    } else {
+                        echo 'No stopped containers found.'
+                    }
+
+                    sh 'docker image prune -a --force'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Increment the image version by 0.1
+                        def newVersion = (params.IMAGE_VERSION as Double) + 0.1
+                        // Convert the new version back to a string with one decimal place
+                        def newVersionString = String.format('%.1f', newVersion)
+                        
+                        // Build the image with the updated version
+                        sh "docker build -t $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} ."
+                        sh "docker tag $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${IMAGE_NAME} $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${newVersionString}"
+
+                        // Pass the new version to the next stages
+                        env.VERSION = newVersionString
+                    }
+                }
+            }
+        }
+
+        stage('Push Image to DockerHub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'DockerHubCredentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                        sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
+                        sh "docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
+                    }
+                }
+            }
+        }
+    }
+}
