@@ -2,14 +2,19 @@
 pipeline {
     agent any
     environment {
+        // Server's IPs
         BUILD_VM_IP = "54.160.210.172"
         TEST_VM_IP = "34.207.115.68"
         PROD_VM_IP = "52.91.62.16"
+
+        // Variables for GCE
+        GCE_CREDENTIALS = credentials('MyFinalProject')
+        GCE_PROJECT_ID = 'MyFinalProject'
+        GCE_VM_INSTANCE_NAME = 'build'
+
+        // Variables for DockerHub
         DOCKERHUB_REPONAME = "new_website"
         IMAGE_NAME = "website"
-        TEST_INSTANCE_USER = "ec2-user"
-        KEY_PATH = "/Users/tamireilon/Downloads/FinalProjectKey.pem"
-        AWS_REGION = "us-east-1"
     }
     parameters {
         string(name: 'IMAGE_VERSION', defaultValue: '1.0', description: 'Specify the last image version')
@@ -88,6 +93,39 @@ pipeline {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
                         sh "docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:${env.VERSION}"
+                    }
+                }
+            }
+        }
+        stage('Cleaning the Test VM') {
+            steps {
+                script {
+                    def credentials = GCE_CREDENTIALS
+                    withCredentials([[$class: 'GoogleRobotCredentialsBinding', credentialsId: credentials.id]]) {
+                        sh "gcloud auth activate-service-account --key-file=${credentials.filePath}"
+                        sh "gcloud config set project ${GCE_PROJECT_ID}"
+                        sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a"
+                        sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps --format {{.Names}}'"
+                    }
+                }
+            }
+        }
+        stage('Cleaning the Test VM') {
+            steps {
+                script {
+                    def credentials = GCE_CREDENTIALS
+                    withCredentials([[$class: 'GoogleRobotCredentialsBinding', credentialsId: credentials.id]]) {
+                        sh "gcloud auth activate-service-account --key-file=${credentials.filePath}"
+                        sh "gcloud config set project ${GCE_PROJECT_ID}"
+                        sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps -q --format \"{{.Names}}\"'"
+                        def runningContainers = sh(script: "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps -q --format \"{{.Names}}\"'", returnStdout: true).trim()
+        
+                        if (runningContainers) {
+                            sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker stop \$(docker ps -q)'"
+                            sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker rm \$(docker ps -a -q)'"
+                        } else {
+                            echo 'No running containers found.'
+                        }
                     }
                 }
             }
