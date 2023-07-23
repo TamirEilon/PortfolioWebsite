@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     environment {
@@ -101,7 +100,7 @@ pipeline {
             steps {
                 script {
                     def credentials = GCE_CREDENTIALS
-                    withCredentials([[$class: 'GoogleRobotCredentialsBinding', credentialsId: credentials.id]]) {
+                    // withCredentials([[$class: 'GoogleRobotCredentialsBinding', credentialsId: credentials.id]]) {
                         sh "gcloud auth activate-service-account --key-file=${credentials.filePath}"
                         sh "gcloud config set project ${GCE_PROJECT_ID}"
                         sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps -q --format \"{{.Names}}\"'"
