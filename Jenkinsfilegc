@@ -99,7 +99,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
                     script {
-                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'YOUR_SSH_COMMANDS'"
+                        sh "sudo ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'YOUR_SSH_COMMANDS'"
                     }
                 }
             }
