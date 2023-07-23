@@ -10,6 +10,8 @@ pipeline {
         GCE_CREDENTIALS = credentials('MyFinalProject')
         GCE_PROJECT_ID = 'MyFinalProject'
         GCE_VM_INSTANCE_NAME = 'build'
+        sshCredentials = credentials('GcpSshCredentials')
+
 
         // Variables for DockerHub
         DOCKERHUB_REPONAME = "new_website"
@@ -96,23 +98,13 @@ pipeline {
                 }
             }
         }
-        stage('Cleaning the Test VM') {
+        stage('SSH into GCP VM') {
+            agent any
             steps {
                 script {
-                    def credentials = GCE_CREDENTIALS
-                    // withCredentials([[$class: 'GoogleRobotCredentialsBinding', credentialsId: credentials.id]]) {
-                        sh "gcloud auth activate-service-account --key-file=${credentials.filePath}"
-                        sh "gcloud config set project ${GCE_PROJECT_ID}"
-                        sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps -q --format \"{{.Names}}\"'"
-                        def runningContainers = sh(script: "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker ps -q --format \"{{.Names}}\"'", returnStdout: true).trim()
-        
-                        if (runningContainers) {
-                            sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker stop \$(docker ps -q)'"
-                            sh "gcloud compute ssh ${GCE_VM_INSTANCE_NAME} --zone me-west1-a --command 'docker rm \$(docker ps -a -q)'"
-                        } else {
-                            echo 'No running containers found.'
-                        }
-                    }
+                    // SSH into the GCP VM and execute the command
+                    sshagent(['GcpSshCredentials']) {
+                        sh "ssh -o StrictHostKeyChecking=no -i ${sshCredentials} ${GCE_VM_INSTANCE_NAME}@${BUILD_VM_IP}" ''"                    }
                 }
             }
         }
