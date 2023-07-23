@@ -35,28 +35,28 @@ pipeline {
             steps {
                 script {
                     def runningContainers = sh(
-                        script: "docker ps --format '{{.Names}}'",
+                        script: "sudo docker ps --format '{{.Names}}'",
                         returnStdout: true
                     ).trim()
         
                     if (runningContainers) {
-                        sh 'docker stop $(docker ps -a -q)'
+                        sh 'sudo docker stop $(docker ps -a -q)'
                     } else {
                         echo 'No running containers found.'
                     }
 
                     def stoppedContainers = sh(
-                        script: "docker ps -a --filter 'status=exited' --format '{{.Names}}'",
+                        script: "sudo docker ps -a --filter 'status=exited' --format '{{.Names}}'",
                         returnStdout: true
                     ).trim()
         
                     if (stoppedContainers) {
-                        sh 'docker rm $(docker ps -a -q)'
+                        sh 'sudo docker rm $(docker ps -a -q)'
                     } else {
                         echo 'No stopped containers found.'
                     }
 
-                    sh 'docker image prune -a --force'
+                    sh 'sudo docker image prune -a --force'
                 }
             }
         }
