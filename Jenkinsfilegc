@@ -123,7 +123,7 @@ pipeline {
                             echo 'No stopped containers found.'
                         }
 
-                        sh "sudo ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker image prune -a --force'"
+                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" \"$SSH_USERNAME@${TEST_VM_IP}\" 'docker image prune -a --force'"
                     }
                 }
             }
