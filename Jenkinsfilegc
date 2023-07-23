@@ -158,11 +158,13 @@ pipeline {
                 }
             }
         }
-        stage('prod ssh check') {
+        stage('SSH into Production') {
             steps {
                 withCredentials([string(credentialsId: 'SecretProdKey', variable: 'SSH_PRIVATE_KEY')]) {
                     script {
-                        sh "ssh -o StrictHostKeyChecking=no -i \"$SSH_PRIVATE_KEY\" tamireilon@${PROD_VM_IP}\" "
+                        sh "echo '$SSH_PRIVATE_KEY' > private_key.pem"
+                        sh "chmod 600 private_key.pem"
+                        sh 'ssh -o StrictHostKeyChecking=no -i private_key.pem tamireilon@${PROD_VM_IP} "ls"'
                     }
                 }
             }
