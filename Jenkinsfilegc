@@ -94,6 +94,13 @@ pipeline {
                 }
             }
         }
+        stage ('ssh test') {
+            steps {
+                sshagent(['SecretKeyBuildVM']) {
+                    sh 'ssh tamireilon@${TEST_VM_IP} "ls"'
+                }
+            }
+        }
         stage('Clearing the TEST VM') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'GcpSshCredentials', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USERNAME')]) {
