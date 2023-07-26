@@ -37,8 +37,7 @@ pipeline {
         stage('SSH to Test VM and Run Image') {
             steps {
                 script {
-                    sshCommand remote: "tamireilon@${TEST_VM_IP}", user: 'jenkins', identityFile: "${SSH_KEY_PATH}", command: "docker pull ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                    sshCommand remote: "tamireilon@${TEST_VM_IP}", user: 'jenkins', identityFile: "${SSH_KEY_PATH}", command: "docker run -d -p 80:80 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                    sshCommand remote: "tamireilon@${TEST_VM_IP}", user: 'jenkins', identityFile: "${SSH_KEY_PATH}", command: "docker pull ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} && docker run -d -p 80:80 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
                 }
             }
         }
