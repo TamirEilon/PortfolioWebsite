@@ -97,7 +97,7 @@ pipeline {
         stage ('ssh test') {
             steps {
                 sshagent(['SecretKeyBuildVM']) {
-                    sh 'ssh tamireilon@${TEST_VM_IP} "ls"'
+                    sh 'ssh tamireilon@34.165.15.168 "ls"'
                 }
             }
         }
