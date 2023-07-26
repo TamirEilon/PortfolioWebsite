@@ -1,4 +1,4 @@
-pipeline {
+hopipeline {
     agent any
 
     environment {
@@ -59,7 +59,7 @@ pipeline {
 
         stage('Connect to Cluster and Deploy') {
             steps {
-                // Replace the below steps with your specific commands to connect and deploy to your cluster
+                echo "Replace the below steps with your specific commands to connect and deploy to your cluster"
                 // Example:
                 // sshCommand remote: "your_cluster_username@your_cluster_ip", user: 'jenkins', identityFile: "${SSH_KEY_PATH}", command: "kubectl apply -f your_deployment_yaml_file.yaml"
             }
