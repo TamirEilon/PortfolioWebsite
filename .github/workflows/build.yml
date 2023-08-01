@@ -1,0 +1,21 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: [your_build_vm_runner]  # Replace with the appropriate runner
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: your_dockerhub_username/your_image_name:latest
