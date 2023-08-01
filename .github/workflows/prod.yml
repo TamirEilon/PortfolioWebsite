@@ -1,0 +1,22 @@
+name: Deploy Docker Image to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: [your_prod_vm_runner]  # Replace with the appropriate runner
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Pull Docker Image
+      run: docker pull your_dockerhub_username/your_image_name:latest
+
+    - name: Deploy
+      run: |
+        # Add your deployment commands here
+        docker run -d --name your_container_name -p 80:80 your_dockerhub_username/your_image_name:latest
