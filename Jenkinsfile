@@ -79,7 +79,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_LOGIN', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh "docker push $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:latest"
-                        sh "docker run -d -p 80:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:latest"
+                        sh "docker run -d -p 8000:80 $DOCKER_USERNAME/${DOCKERHUB_REPONAME}:latest"
                     }
                 }
             }
