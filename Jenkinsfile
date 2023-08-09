@@ -27,7 +27,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo "Cloning the repository from GitHub"
-                git branch: 'main', url: 'https://github.com/TamirEilon/PortfolioWebsite.git'
+                git branch: 'main', url: 'https://github.com/TamirEilon/FinalProject.git'
                 echo "Cloning from GitHub finished"
             }
         }
