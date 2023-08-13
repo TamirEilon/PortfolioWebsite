@@ -16,7 +16,6 @@ jobs:
     - name: Build Docker Image
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest .
-
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -26,7 +25,6 @@ jobs:
     - name: Push Docker Image
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
-
   run-and-check:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -48,26 +46,27 @@ jobs:
             sleep 5
           fi
         done
-
   deploy-to-gke:
     needs: run-and-check
     runs-on: ubuntu-latest
+    
     steps:
     - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0.4.2
+      uses: google-github-actions/setup-gcloud@v0.3.0
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        credentials: ${{ secrets.GCP_SA_KEY }}
-        activate_service_account: true
-    
-    - name: Configure Docker to use GCP credentials
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+        version: '358.0.0'  # Use the version that works for your setup
+
+    - name: Create GKE Cluster
       run: |
-        gcloud auth configure-docker
-    
-    - name: Set Kubectl Context
+        gcloud container clusters create my-cluster --num-nodes=3 --zone=me-west1-a
+        
+    - name: Get GKE Credentials
+      run: gcloud container clusters get-credentials my-cluster --zone=me-west1-a
+      
+    - name: Deploy to GKE
       run: |
-        gcloud container clusters get-credentials my-cluster --zone me-west1
-    
-    - name: Apply Kubernetes Deployment
-      run: |
-        kubectl apply -f deployment.yml
+        kubectl create deployment my-app --image=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
+        kubectl expose deployment my-app --type=LoadBalancer --port=80 --target-port=80
