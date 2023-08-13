@@ -60,6 +60,7 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
+        version: '358.0.0'  # Use the version that works for your setup
 
     - name: Create GKE Cluster
       run: |
