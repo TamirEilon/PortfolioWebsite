@@ -52,24 +52,22 @@ jobs:
   deploy-to-gke:
     needs: run-and-check
     runs-on: ubuntu-latest
-    
     steps:
     - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0.3.0
+      uses: google-github-actions/setup-gcloud@v0.4.2
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
-        version: '358.0.0'  # Use the version that works for your setup
-
-    - name: Create GKE Cluster
+        credentials: ${{ secrets.GCP_SA_KEY }}
+        activate_service_account: true
+    
+    - name: Configure Docker to use GCP credentials
       run: |
-        gcloud container clusters create my-cluster --num-nodes=3 --zone=me-west1-a
-        
-    - name: Get GKE Credentials
-      run: gcloud container clusters get-credentials my-cluster --zone=me-west1-a
-      
-    - name: Deploy to GKE
+        gcloud auth configure-docker
+    
+    - name: Set Kubectl Context
       run: |
-        kubectl create deployment my-app --image=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
-        kubectl expose deployment my-app --type=LoadBalancer --port=80 --target-port=80
+        gcloud container clusters get-credentials my-cluster --zone me-west1
+    
+    - name: Apply Kubernetes Deployment
+      run: |
+        kubectl apply -f deployment.yml
