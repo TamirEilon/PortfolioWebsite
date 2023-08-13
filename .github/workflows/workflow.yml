@@ -49,14 +49,6 @@ jobs:
           fi
         done
 
-    - name: Tag Docker Image for Google Cloud Artifact Registry
-      run: |
-        docker tag ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKERHUB_REPO }}:latest
-
-    - name: Push Docker Image to Google Cloud Artifact Registry
-      run: |
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKERHUB_REPO }}:latest
-
   deploy:
     needs: run-and-check
     runs-on: ubuntu-latest
