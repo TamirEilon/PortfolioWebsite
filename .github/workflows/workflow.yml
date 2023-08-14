@@ -63,7 +63,7 @@ jobs:
           export_default_credentials: true
 
       - name: Configure Docker credentials
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Pull image from DockerHub
         run: docker pull ${{ secrets.DOCKERHUB_REPO }}:latest # <dockerhub-image-name:tag>
