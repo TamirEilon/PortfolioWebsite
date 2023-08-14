@@ -48,6 +48,7 @@ jobs:
         done
         
   deploy_to_gke:
+    needs: run-and-check
     runs-on: ubuntu-latest
 
     steps:
