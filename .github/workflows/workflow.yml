@@ -70,7 +70,7 @@ jobs:
   
       - name: Configure kubectl
         run: |
-          gcloud container clusters get-credentials my-cluster --zone me-west1
+          gcloud container clusters get-credentials my-cluster --zone=me-west1
   
       - name: Deploy to GKE
         run: |
