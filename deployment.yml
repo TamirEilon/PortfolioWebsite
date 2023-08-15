@@ -1,19 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: my-deployment
+  name: my-deployment
 spec:
-    replicas: 3
-    selector:
-        matchLabels:
-          app: app
-    template:
-        metadata:
-            labels:
-              app: my-app
-        spec:
-            containers:
-            - name: my-container
-                image: tamireilon/portfolio-website:latest
-                ports:
-                - containerPort: 80
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-container
+          image: tamireilon/portfolio-website:latest
+            - containerPort: 80
