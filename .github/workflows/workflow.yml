@@ -70,8 +70,8 @@ jobs:
 
       - name: Tag image for GCP Container Registry
         run: |
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest gcr.io/myfinalproject2-395806/my-app:latest
-          docker push gcr.io/myfinalproject2-395806/my-app:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
+          docker push gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
 
       - name: Configure kubectl
         run: gcloud container clusters get-credentials my-cluster --zone me-west1
