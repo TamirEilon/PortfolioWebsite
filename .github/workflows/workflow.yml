@@ -70,7 +70,7 @@ jobs:
 
       - name: Tag image for GCP Container Registry
         run: |
-          docker tag portfolio-website:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
           docker push gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
 
       - name: Configure kubectl
