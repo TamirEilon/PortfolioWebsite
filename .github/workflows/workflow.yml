@@ -53,9 +53,6 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-  
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
         with:
