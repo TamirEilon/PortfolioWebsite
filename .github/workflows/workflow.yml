@@ -25,6 +25,7 @@ jobs:
     - name: Push Docker Image
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
+        
   run-and-check:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -62,17 +63,15 @@ jobs:
           project_id: myfinalproject2-395806
           export_default_credentials: true
   
-      - name: Configure Docker credentials
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-  
       - name: Pull image from DockerHub
         run: docker pull ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
+
+      - name: Set kubectl context to GKE
+        run: gcloud container clusters get-credentials my-cluster --region me-west1
+
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -f deployment.yml
   
-      - name: Configure kubectl
-        run: |
-          gcloud container clusters get-credentials my-cluster --zone=me-west1
+      - name: Trigger GKE rollout
+        run: kubectl rollout restart deployment my-deployment
   
-      - name: Deploy to GKE
-        run: |
-          kubectl create deployment my-app --image=${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
-          kubectl expose deployment my-app --type=LoadBalancer --port=80 --target-port=80
