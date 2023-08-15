@@ -66,11 +66,11 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Pull image from DockerHub
-        run: docker pull portfolio-website:latest # <dockerhub-image-name:tag>    ${{ secrets.DOCKER_USERNAME }}/
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest # <dockerhub-image-name:tag>    ${{ secrets.DOCKER_USERNAME }}/
 
       - name: Tag image for GCP Container Registry
         run: |
-          docker tag portfolio-website:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
           docker push gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
 
       - name: Configure kubectl
