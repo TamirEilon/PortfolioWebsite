@@ -68,15 +68,10 @@ jobs:
       - name: Pull image from DockerHub
         run: docker pull ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest # <dockerhub-image-name:tag>    ${{ secrets.DOCKER_USERNAME }}/
 
-      - name: Tag image for GCP Container Registry
-        run: |
-          docker tag ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
-          docker push gcr.io/myfinalproject2-395806/my-first-artifact-repo:latest
-
       - name: Configure kubectl
         run: gcloud container clusters get-credentials my-cluster --zone me-west1
 
       - name: Deploy to GKE
         run: |
-          kubectl set image deployment/my-deployment my-container=gcr.io/myfinalproject2-395806/my-app:latest
-          
+          kubectl create deployment my-app --image=${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
+          kubectl expose deployment my-app --type=LoadBalancer --port=80 --target-port=80
