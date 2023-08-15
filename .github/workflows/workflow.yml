@@ -69,9 +69,6 @@ jobs:
       - name: Set kubectl context to GKE
         run: gcloud container clusters get-credentials my-cluster --region me-west1
 
-      - name: Install vgke-gcloud-auth-plugin
-        run: sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-
       - name: Apply Kubernetes manifests
         run: kubectl apply -f deployment.yml
   
