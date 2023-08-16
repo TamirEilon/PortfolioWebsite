@@ -41,9 +41,9 @@ jobs:
 
         IFS='.' read -r -a version_parts <<< "$current_version"
         case "$bump_type" in
-          major) new_version="${version_parts[0]}.$((${version_parts[1]} + 1)).0" ;;
-          minor) new_version="${version_parts[0]}.${version_parts[1]}.$((${version_parts[2]} + 1))" ;;
-          *) new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}.$((${version_parts[3]} + 1))" ;;
+          major) new_version="$((version_parts[0] + 1)).0.0" ;;
+          minor) new_version="${version_parts[0]}.$((version_parts[1] + 1)).0" ;;
+          *) new_version="${version_parts[0]}.${version_parts[1]}.$((version_parts[2] + 1))" ;;
         esac
 
         echo "::set-output name=new_version::$new_version"
