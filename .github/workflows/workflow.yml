@@ -15,14 +15,7 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        # Increment version number
-        MAJOR=1
-        MINOR=0
-        PATCH=$((PATCH+1))
-        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-
-        # Build the Docker image with the new version tag
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/portfolio-website:$NEW_VERSION .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest .
         
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
@@ -30,11 +23,16 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Push Docker Image
+    - name: Push Docker Image (versioned)
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:$NEW_VERSION
-        docker tag ${{ secrets.DOCKER_USERNAME }}/portfolio-website:$NEW_VERSION ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
+        # Push the versioned tag
+        docker push "${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest"
+
+    - name: Push Docker Image (latest)
+      run: |
+        # Push the latest tag
+        docker tag "${{ secrets.DOCKER_USERNAME }}/portfolio-website:$NEW_VERSION" "${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest"
+        docker push "${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest"
         
   run-and-check:
     needs: build-and-push
