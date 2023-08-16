@@ -24,7 +24,7 @@ jobs:
         else
           BUMP='patch'
         fi
-        echo "SEMVER=$(curl -s "https://hub.docker.com/v2/repositories/$REPO_NAME/tags/?page_size=100" | jq -r '.results[].name | select(. != "latest")' | sort -rV | head -n 1 | awk -F. -v bump=$BUMP '{if(bump=="major") {$1+=1; $2=0; $3=0} else if(bump=="minor") {$2+=1; $3=0} else {$3+=1} print}')"
+        echo "SEMVER=$(git describe --tags --abbrev=0 | awk -F. -v bump=$BUMP '{if(bump=="major") {$1+=1; $2=0; $3=0} else if(bump=="minor") {$2+=1; $3=0} else {$3+=1} print}')"
         echo "BUMP=$BUMP" >> $GITHUB_ENV
         
     - name: Build Docker Image
