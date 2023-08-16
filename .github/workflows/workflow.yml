@@ -1,4 +1,4 @@
-name: Build, Push, Run, Check, and Deployy
+name: Build, Push, Run, Check, and Deploy
 
 on:
   push:
