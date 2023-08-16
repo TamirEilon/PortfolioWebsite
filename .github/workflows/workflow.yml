@@ -62,7 +62,10 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: myfinalproject2-395806
           export_default_credentials: true
-  
+
+      - name: install plugin
+        run: gcloud components install gke-gcloud-auth-plugin
+
       - name: Pull image from DockerHub
         run: docker pull ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
 
