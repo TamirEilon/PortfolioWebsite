@@ -15,4 +15,5 @@ spec:
       containers:
         - name: my-container
           image: tamireilon/portfolio-website:latest
-            - containerPort: 80
+          ports:
+              - containerPort: 80
