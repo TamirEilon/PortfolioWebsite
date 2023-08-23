@@ -16,7 +16,7 @@ Welcome to the README file for my final DevOps project. This document will guide
 
 ## Project Overview
 
-The purpose of this project is to showcase a DevOps workflow for deploying applications to Google Kubernetes Engine (GKE) using GitHub Actions and Helm. The project also includes an automated versioning mechanism to streamline the deployment process.
+The purpose of this project is to showcase a DevOps workflow for deploying applications to Google Kubernetes Engine (GKE) using GitHub Actions and Helm. The project also includes an automated versioning mechanism to streamline the deployment process and image tracking in DockerHub.
 
 ## Prerequisites
 
@@ -27,6 +27,7 @@ Before you begin, ensure you have the following tools and accounts set up:
 3. **Docker**: Install Docker to build and manage container images.
 4. **kubectl**: Install the Kubernetes command-line tool to interact with your GKE cluster.
 5. **Helm**: Install Helm, a package manager for Kubernetes applications.
+6. **DockerHub**: You need a DockerHub account to create and manage your image repository
 
 ## Getting Started
 
