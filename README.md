@@ -43,7 +43,27 @@ Before you begin, ensure you have the following tools and accounts set up:
 
 ## Automated Versioning
 
-Describe here how your automated versioning method works. This could involve using a tool like Semantic Versioning, generating version numbers based on Git commit history, or any other method you've implemented.
+The automated versioning method of the project uses a semantic versioning method (3-digit), that updates the version according to the user's commit message - in the commit message the user (AKA the developer), is asked to use a keyword according to the change he did to the app (major/minor/patch).
+If the user won't use any of the keywords specified, then the function will automatically see it as a patch and will change the version accordingly. 
+
+In order for the function to work, it needs to pull the latest version that exists in DockerHub. These few lines pull all the versions that were pushed to DockerHub and organize them so it will show only the latest.
+```bash
+last_version=$(curl -s "https://registry.hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/portfolio-website/tags/?page_size=10" | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+        echo "::set-output name=last_version::$last_version"
+```
+
+      
+```bash
+        commit_message=$(git log -1 --pretty=%B)
+        if echo "$commit_message" | grep -qiE 'major'; then
+          echo "::set-output name=bump_type::major"
+        elif echo "$commit_message" | grep -qiE 'minor'; then
+          echo "::set-output name=bump_type::minor"
+        else
+          echo "::set-output name=bump_type::patch"
+        fi
+```
+
 
 ## GitHub Actions
 
