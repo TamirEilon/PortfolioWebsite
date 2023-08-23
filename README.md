@@ -9,14 +9,13 @@ Welcome to the README file for my final DevOps project. This document will guide
 - [Getting Started](#getting-started)
 - [Automated Versioning](#automated-versioning)
 - [GitHub Actions](#github-actions)
-- [Helm Deployment](#helm-deployment)
 - [Google Kubernetes Engine (GKE)](#google-kubernetes-engine-gke)
 - [Troubleshooting](#troubleshooting)
 - [Conclusion](#conclusion)
 
 ## Project Overview
 
-The purpose of this project is to showcase a DevOps workflow for deploying applications to Google Kubernetes Engine (GKE) using GitHub Actions and Helm. The project also includes an automated versioning mechanism to streamline the deployment process and image tracking in DockerHub.
+The purpose of this project is to showcase a DevOps workflow for deploying applications to Google Kubernetes Engine (GKE) using GitHub Actions. The project also includes an automated versioning mechanism to streamline the deployment process and image tracking in DockerHub.
 
 ## Prerequisites
 
@@ -49,10 +48,6 @@ Describe here how your automated versioning method works. This could involve usi
 ## GitHub Actions
 
 Explain how GitHub Actions are set up in your project to automate the deployment process. Include information about the workflow files, how they are triggered, and any environment variables or secrets required.
-
-## Helm Deployment
-
-Detail the Helm chart structure in your repository. Explain the purpose of important files (like `values.yaml`, `deployment.yaml`, `service.yaml`, etc.), and how they interact with your GKE cluster. Provide instructions on how to customize the Helm values for different environments.
 
 ## Google Kubernetes Engine (GKE)
 
