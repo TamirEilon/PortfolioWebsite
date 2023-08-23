@@ -52,6 +52,8 @@ last_version=$(curl -s "https://registry.hub.docker.com/v2/repositories/${{ secr
         echo "::set-output name=last_version::$last_version"
 ```
 
+
+This section 
       
 ```bash
         commit_message=$(git log -1 --pretty=%B)
