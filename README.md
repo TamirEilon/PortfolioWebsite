@@ -1,86 +1,75 @@
-# DevOps Project README
+# Automated Versioning and Deployment with GitHub Actions and GKE
 
-Welcome to the README file for my final DevOps project. This document will guide you through the setup, usage, and components of my project, which utilizes GitHub Actions, Helm, Google Kubernetes Engine (GKE), and an automated versioning method.
+This repository contains a DevOps project that demonstrates an automated versioning and deployment process using GitHub Actions and Google Kubernetes Engine (GKE). The workflow includes building, tagging, and pushing Docker images based on semantic versioning, running and checking containers, and deploying the application to GKE. The project integrates various tools and technologies to streamline the development and deployment lifecycle.
 
-## Table of Contents
+## Workflow Overview
 
-- [Project Overview](#project-overview)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Automated Versioning](#automated-versioning)
-- [GitHub Actions](#github-actions)
-- [Google Kubernetes Engine (GKE)](#google-kubernetes-engine-gke)
-- [Troubleshooting](#troubleshooting)
-- [Conclusion](#conclusion)
+The workflow is divided into three main stages: Build and Push, Run and Check, and Deploy to GKE. Here's how each stage works:
 
-## Project Overview
+### 1. Build and Push
 
-The purpose of this project is to showcase a DevOps workflow for deploying applications to Google Kubernetes Engine (GKE) using GitHub Actions. The project also includes an automated versioning mechanism to streamline the deployment process and image tracking in DockerHub.
+In this stage, the workflow triggers on every push to the `main` branch. It performs the following steps:
 
-## Prerequisites
+- **Checkout Repository**: Clones the repository to the GitHub Actions runner.
 
-Before you begin, ensure you have the following tools and accounts set up:
+- **Get Last Version**: Retrieves the latest version of the application from Docker Hub using Docker API. This version is used as the starting point for version bumping.
 
-1. **GitHub Account**: You need a GitHub account to create and manage your repository.
-2. **Google Cloud Platform (GCP) Account**: Set up a GCP account and create a GKE cluster for deployment.
-3. **Docker**: Install Docker to build and manage container images.
-4. **kubectl**: Install the Kubernetes command-line tool to interact with your GKE cluster.
-5. **Helm**: Install Helm, a package manager for Kubernetes applications.
-6. **DockerHub**: You need a DockerHub account to create and manage your image repository
+- **Determine Version Bump**: Analyzes the commit message of the latest commit to decide the type of version bump (major, minor, or patch).
 
-## Getting Started
+- **Bump Version**: Bumps the application version according to the determined bump type. It updates the version number based on semantic versioning rules.
 
-1. **Repository Setup**: Create a new GitHub repository for your project.
+- **Build Docker Image**: Builds a Docker image of the application using the bumped version number.
 
-2. **Clone Repository**: Clone the repository to your local development environment:
+- **Log in to Docker Hub**: Logs in to Docker Hub using provided credentials.
 
-   ```bash
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
-   ```
+- **Push Docker Image**: Pushes the built Docker image to Docker Hub with the bumped version tag. It also tags the image as `latest` for convenience.
 
-3. **Application Code**: Place your application code in the repository directory.
+### 2. Run and Check
 
-## Automated Versioning
+This stage starts once the Build and Push stage successfully completes. It performs the following steps:
 
-The automated versioning method of the project uses a semantic versioning method (3-digit), that updates the version according to the user's commit message - in the commit message the user (AKA the developer), is asked to use a keyword according to the change he did to the app (major/minor/patch).
-If the user won't use any of the keywords specified, then the function will automatically see it as a patch and will change the version accordingly. 
+- **Pull Docker Image**: Pulls the latest Docker image from Docker Hub.
 
-In order for the function to work, it needs to pull the latest version that exists in DockerHub. These few lines pull all the versions that were pushed to DockerHub and organize them so it will show only the latest.
-```bash
-last_version=$(curl -s "https://registry.hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/portfolio-website/tags/?page_size=10" | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
-        echo "::set-output name=last_version::$last_version"
-```
+- **Check if Container is Running**: Checks if the containerized application is up and running by sending HTTP requests to the application's endpoint. If the container is not yet running, it waits and retries.
 
+### 3. Deploy to GKE
 
-This section 
-      
-```bash
-        commit_message=$(git log -1 --pretty=%B)
-        if echo "$commit_message" | grep -qiE 'major'; then
-          echo "::set-output name=bump_type::major"
-        elif echo "$commit_message" | grep -qiE 'minor'; then
-          echo "::set-output name=bump_type::minor"
-        else
-          echo "::set-output name=bump_type::patch"
-        fi
-```
+This stage starts once the Run and Check stage successfully completes. It deploys the application to GKE using Kubernetes manifests. The steps include:
 
+- **Checkout code**: Retrieves the latest code changes from the repository.
 
-## GitHub Actions
+- **Set up Google Cloud SDK**: Configures Google Cloud SDK with the necessary authentication and project information.
 
-Explain how GitHub Actions are set up in your project to automate the deployment process. Include information about the workflow files, how they are triggered, and any environment variables or secrets required.
+- **Install GKE Auth Plugin**: Installs the GKE authentication plugin for `kubectl`.
 
-## Google Kubernetes Engine (GKE)
+- **Pull image from DockerHub**: Pulls the latest Docker image from Docker Hub.
 
-Describe how to set up a GKE cluster using GCP, including any specific configurations or settings you've chosen for your deployment. Explain how to authenticate `kubectl` with your GKE cluster and ensure smooth communication between your deployment pipeline and the cluster.
+- **Set kubectl context to GKE**: Sets the `kubectl` context to the GKE cluster.
 
-## Troubleshooting
+- **Apply Kubernetes manifests**: Applies the Kubernetes deployment manifest to the GKE cluster.
 
-List common issues that users might encounter and provide solutions. Include steps for debugging deployment problems, diagnosing GitHub Actions failures, and resolving GKE-related issues.
+- **Trigger GKE rollout**: Restarts the deployment to trigger a rollout of the updated application.
+
+## Configuration
+
+To use this workflow for your project, you need to set up the following secrets in your GitHub repository:
+
+- `DOCKER_USERNAME`: Your Docker Hub username.
+- `DOCKERHUB_TOKEN`: Your Docker Hub access token.
+- `GCP_SA_KEY`: A Google Cloud service account key with appropriate GKE and GCR permissions.
+
+Make sure to adjust any paths, environment variables, or configuration values in the workflow to match your project's structure and requirements.
+
+## Usage
+
+1. Make code changes to your project.
+
+2. Push the changes to the `main` branch.
+
+3. The workflow will be triggered automatically, starting with the Build and Push stage.
+
+4. Upon successful completion of each stage, the workflow will automatically progress to the next stage.
 
 ## Conclusion
 
-In conclusion, this DevOps project demonstrates an end-to-end workflow for deploying applications using GitHub Actions, Helm, and Google Kubernetes Engine. By following the instructions in this README, you'll be able to effectively set up and manage a CI/CD pipeline with automated versioning. If you encounter any issues or have questions, don't hesitate to reach out for assistance.
-
-Happy DevOps-ing! 🚀
+This DevOps project demonstrates an automated versioning and deployment pipeline using GitHub Actions and GKE. By leveraging semantic versioning, Docker Hub, and Kubernetes, the workflow allows for streamlined development, version management, and deployment of containerized applications.
