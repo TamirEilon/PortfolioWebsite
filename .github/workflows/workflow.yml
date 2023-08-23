@@ -134,26 +134,3 @@ jobs:
   
       - name: Trigger GKE rollout
         run: kubectl rollout restart deployment my-deployment
-
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Install Helm
-        run: |
-          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-          chmod 700 get_helm.sh
-          ./get_helm.sh
-
-      - name: Configure Kubectl
-        uses: azure/k8s-set-context@v1
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}  # Add your Kubernetes configuration as a secret
-
-      - name: Deploy with Helm
-        run: |
-          helm upgrade --install my-release ./chart.yml
