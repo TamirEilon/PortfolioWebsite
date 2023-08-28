@@ -1,26 +1,9 @@
-apiVersion: monitoring.coreos.com/v1
+apiVersion: monitoring.prometheus.io/v1
 kind: Prometheus
 metadata:
   name: prometheus
-  labels:
-    prometheus: k8s
 spec:
   replicas: 3
-  serviceAccountName: prometheus
-  securityContext:
-    fsGroup: 2000
-  resources:
-    requests:
-      memory: 400Mi
-  alerting:
-    alertmanagers:
-      - namespace: default
-        name: alertmanager-main
-        port: web
-  ruleSelector:
-    matchLabels:
-      role: prometheus
-      prometheus: k8s
   storage:
     volumeClaimTemplate:
       spec:
@@ -28,4 +11,15 @@ spec:
         resources:
           requests:
             storage: 10Gi
-  version: 2.30.3  # Set the Prometheus Operator version that matches your setup
+  serviceAccountName: prometheus
+  securityContext:
+    fsGroup: 2000
+  ruleSelector:
+    matchLabels:
+      role: prometheus
+      prometheus: k8s
+  alerting:
+    alertmanagers:
+    - namespace: default
+      name: alertmanager-main
+      port: web
