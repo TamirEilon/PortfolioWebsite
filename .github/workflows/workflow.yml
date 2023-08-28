@@ -81,7 +81,7 @@ jobs:
         new_version="${{ steps.bump_version.outputs.new_version }}"
         docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:$new_version 
         docker tag ${{ secrets.DOCKER_USERNAME }}/portfolio-website:$new_version ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest 
+        docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-website:latest
         
   run-and-check:
     needs: build-and-push
@@ -113,10 +113,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-        
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
         with:
