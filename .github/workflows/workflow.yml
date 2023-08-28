@@ -134,3 +134,22 @@ jobs:
   
       - name: Trigger GKE rollout
         run: kubectl rollout restart deployment my-deployment
+
+  deploy_monitoring:
+    needs: deploy_to_gke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set kubectl context to GKE
+        run: gcloud container clusters get-credentials my-cluster --region me-west1
+
+      - name: Deploy Prometheus and Grafana
+        run: |
+          kubectl apply -f prometheus.yml
+          kubectl apply -f grafana.yml
+
+      - name: Expose Grafana Service
+        run: kubectl expose deployment grafana --type=LoadBalancer --port=3000
