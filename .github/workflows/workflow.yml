@@ -157,6 +157,9 @@ jobs:
       - name: Set kubectl context to GKE
         run: gcloud container clusters get-credentials my-cluster --region me-west1
 
+      - name: Install Prometheus CRDs
+        run: kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.50/example/prometheus-operator-crd/alertmanager.crd.yaml
+
       - name: Deploy Prometheus and Grafana
         run: |
           kubectl apply -f prometheus.yml
