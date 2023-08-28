@@ -143,6 +143,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: myfinalproject2-395806
+          export_default_credentials: true
+
+      - name: install plugin
+        run: gcloud components install gke-gcloud-auth-plugin
+
+
       - name: Set kubectl context to GKE
         run: gcloud container clusters get-credentials my-cluster --region me-west1
 
