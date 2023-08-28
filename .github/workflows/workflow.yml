@@ -153,11 +153,9 @@ jobs:
       - name: install plugin
         run: gcloud components install gke-gcloud-auth-plugin
 
-      - name: Set kubectl context to GKE
-        run: gcloud container clusters get-credentials my-cluster --region me-west1
-
       - name: Deploy Prometheus and Grafana
         run: |
+          gcloud container clusters get-credentials my-cluster --region me-west1
           kubectl apply -f prometheus.yml
           kubectl apply -f grafana.yml
 
