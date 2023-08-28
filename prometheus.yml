@@ -1,4 +1,4 @@
-apiVersion: monitoring.prometheus.io/v1
+apiVersion: monitoring/v1
 kind: Prometheus
 metadata:
   name: prometheus
