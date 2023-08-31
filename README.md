@@ -4,6 +4,8 @@ This repository contains a DevOps project that demonstrates an automated version
 
 ## Workflow Overview
 
+<img width="1011" alt="Screenshot 2023-08-31 at 18 05 59" src="https://github.com/TamirEilon/PortfolioWebsite/assets/134195272/a4632eee-694c-4a07-8d13-a4b5cbb3532e">
+
 The workflow is divided into three main stages: Build and Push, Run and Check, and Deploy to GKE. Here's how each stage works:
 
 ### 1. Build and Push
